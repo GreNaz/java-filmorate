@@ -11,14 +11,13 @@ import javax.validation.constraints.Size;
 import java.time.LocalDate;
 
 @Data
-@Builder
+@Builder()
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Film {
 
-    private int id;
+    private long id;
 
     @EqualsAndHashCode.Include
-    @NotNull(message = "Не указано название фильма")
     @NotBlank(message = "Получен фильм с пустым названием")
     private final String name;
 
@@ -31,6 +30,5 @@ public class Film {
     private final LocalDate releaseDate;
 
     @Min(value = 1, message = "Получена отрицательная или равная 0 продолжительность фильма")
-    @NotNull(message = "Не указана длительность фильма")
     private final int duration;
 }

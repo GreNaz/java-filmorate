@@ -13,16 +13,14 @@ import java.util.Map;
 
 @Slf4j
 @RestController
-
 @RequestMapping("/films")
-
 public class FilmController {
 
-    private int id;
+    private long id;
 
     private static final LocalDate EARLIEST_DATE = LocalDate.of(1895, 12, 28);
 
-    private final Map<Integer, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @PostMapping
     public Film addFilm(@Valid @RequestBody Film film) {
@@ -50,7 +48,7 @@ public class FilmController {
 
         if (film.getReleaseDate().isBefore(EARLIEST_DATE)) {
             log.error("Дата релиза раньше {}", EARLIEST_DATE);
-            throw new ValidationException("Дата релиза — не раньше 28 декабря 1895 года.");
+            throw new ValidationException("Дата релиза должна быть — не раньше : " + EARLIEST_DATE);
         }
 
         if (films.containsValue(film)) {

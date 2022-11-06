@@ -13,15 +13,13 @@ import java.time.LocalDate;
 
 public class User {
 
-    private int id;
+    private long id;
 
     @NotNull
     @Email(message = "Некорректный адрес электронной почты")
-    @NotBlank(message = "Электронная почта не может быть пустой")
     @EqualsAndHashCode.Include
     private final String email;
 
-    @NotNull(message = "Не указан логин")
     @NotBlank(message = "Полученный логин пустой")
     @Pattern(regexp = "\\S+", message = "Логин содержит пробелы")
     private final String login;
