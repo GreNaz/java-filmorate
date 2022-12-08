@@ -1,19 +1,23 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 public class User {
 
+    private String name;
+
     private long id;
+
+    private Set<Long> friends = new HashSet<>();
 
     @NotNull
     @Email(message = "Некорректный адрес электронной почты")
@@ -24,9 +28,12 @@ public class User {
     @Pattern(regexp = "\\S+", message = "Логин содержит пробелы")
     private final String login;
 
-    private String name;
-
     @NotNull(message = "Не указана дата рождения")
     @PastOrPresent(message = "Полученная дата рождения еще не наступила")
     private final LocalDate birthday;
+
+    public Set<Long> addFriend(Long id) {
+        friends.add(id);
+        return friends;
+    }
 }

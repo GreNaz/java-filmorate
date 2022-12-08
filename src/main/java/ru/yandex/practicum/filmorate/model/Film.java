@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,13 +8,16 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
-@Builder()
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Film {
 
     private long id;
+
+    private Set<Long> likes = new HashSet<>();
 
     @EqualsAndHashCode.Include
     @NotBlank(message = "Получен фильм с пустым названием")
@@ -31,4 +33,9 @@ public class Film {
 
     @Min(value = 1, message = "Получена отрицательная или равная 0 продолжительность фильма")
     private final int duration;
+
+    public Set<Long> addLike(Long id) {
+        likes.add(id);
+        return likes;
+    }
 }
