@@ -60,10 +60,11 @@ public class FilmService {
     }
 
     public Film update(Film film) {
+        validation(film);
         return filmStorage.update(film);
     }
 
-    public List<Film> getAll() {
+    public List<Film> getFilms() {
         return filmStorage.getFilms();
     }
 
@@ -72,25 +73,21 @@ public class FilmService {
                 () -> new FilmAlreadyExistException("Film id = " + id + "was not found"));
     }
 
-    public List<Film> getFilms() {
-        return filmStorage.getFilms();
-    }
-
     public List<Film> getPopular(int count) {
         return filmStorage.getPopular(count);
     }
 
     private void validation(Long userId, Long filmId) {
-
         log.debug("Start of validation");
-
         get(filmId);
-
         if (userStorage.get(userId).isEmpty()) {
             log.error("An error has occurred. Invalid input user data");
             throw new UserAlreadyExistException("User id = " + userId + " was not found");
         }
-
         log.debug("Successful validation");
+    }
+
+    private void validation(Film film) {
+        get(film.getId());
     }
 }

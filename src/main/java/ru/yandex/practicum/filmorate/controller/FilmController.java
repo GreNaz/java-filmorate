@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -22,7 +21,6 @@ import java.util.List;
 public class FilmController {
     private final FilmService filmService;
     private static final LocalDate FIRST_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
-
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
@@ -47,7 +45,7 @@ public class FilmController {
     @GetMapping
     public List<Film> getAll() {
         log.info("Received a request to get all films");
-        return filmService.getAll();
+        return filmService.getFilms();
     }
 
     @GetMapping("/{id}")
@@ -68,17 +66,10 @@ public class FilmController {
         return filmService.removeLike(filmId, userId);
     }
 
-    public void validation(Film film) {
-
+    private void validation(Film film) {
         if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE_DATE)) {
             log.error("Realise date must be after :  {}", FIRST_FILM_RELEASE_DATE);
             throw new ValidationException("Realise date must be after :  " + FIRST_FILM_RELEASE_DATE);
-        }
-
-        if (filmService.getFilms().contains(film)) {
-            log.error("Film " + film.getName() + " already registered.");
-            throw new FilmAlreadyExistException("Film " +
-                    film.getName() + " already registered.");
         }
     }
 }
