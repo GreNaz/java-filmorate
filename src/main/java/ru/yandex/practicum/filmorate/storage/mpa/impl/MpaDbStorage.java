@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
@@ -20,7 +22,7 @@ public class MpaDbStorage implements MpaStorage {
     @Override
     public List<Mpa> getRatings() {
         String sql = "SELECT * FROM mpa";
-        return jdbcTemplate.query(sql, MpaDbStorage::makeMpa);
+        return jdbcTemplate.query(sql, this::makeMpa);
     }
 
     @Override
@@ -30,10 +32,15 @@ public class MpaDbStorage implements MpaStorage {
         if (!mpaRows.next()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, MpaDbStorage::makeMpa, id));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::makeMpa, id));
     }
 
-    static Mpa makeMpa(ResultSet resultSet, int rowNum) throws SQLException {
+    public void injectMpa(Film film){
+        film.setMpa(jdbcTemplate.queryForObject("SELECT * FROM mpa WHERE MPA_ID = ?",
+                this::makeMpa, film.getMpa().getId()));
+    }
+
+    private Mpa makeMpa(ResultSet resultSet, int rowNum) throws SQLException {
         int id = resultSet.getInt("mpa_id");
         String name = resultSet.getString("name");
         return new Mpa(id, name);

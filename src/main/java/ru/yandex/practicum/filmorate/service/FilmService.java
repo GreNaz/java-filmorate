@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -24,6 +25,7 @@ import java.util.Optional;
 public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final MpaStorage mpaStorage;
 
     public Film createLike(Long filmId, Long userId) {
 
@@ -32,12 +34,10 @@ public class FilmService {
         Optional<User> user = userStorage.get(userId);
         Optional<Film> film = filmStorage.get(filmId);
 
-        filmStorage.createLike(filmId, userId);
-
         log.info("Added like from user " + user.get().getEmail() +
                 " to film " + film.get().getName());
 
-        return film.get();
+        return filmStorage.createLike(filmId, userId);
     }
 
     public Film removeLike(Long filmId, Long userId) {
@@ -47,20 +47,21 @@ public class FilmService {
         Optional<User> user = userStorage.get(userId);
         Optional<Film> film = filmStorage.get(filmId);
 
-        filmStorage.removeLike(filmId, userId);
-
         log.info("Removed like from user " + user.get().getEmail() +
                 " to film " + film.get().getName());
 
-        return film.get();
+        return filmStorage.removeLike(filmId, userId);
+
     }
 
     public Film create(Film film) {
+        mpaStorage.injectMpa(film);
         return filmStorage.create(film);
     }
 
     public Film update(Film film) {
         validation(film);
+        mpaStorage.injectMpa(film);
         return filmStorage.update(film);
     }
 
@@ -70,7 +71,7 @@ public class FilmService {
 
     public Film get(Long id) {
         return filmStorage.get(id).orElseThrow(
-                () -> new FilmAlreadyExistException("Film id = " + id + "was not found"));
+                () -> new FilmAlreadyExistException("Film id = " + id + " was not found"));
     }
 
     public List<Film> getPopular(int count) {
