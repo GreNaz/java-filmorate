@@ -33,7 +33,8 @@ public class Film {
 
     @Min(value = 1, message = "Received negative or equal to 0 movie duration")
     private int duration;
-
+    
+    @NotNull
     private Mpa mpa;
 
     private List<Genre> genres;
