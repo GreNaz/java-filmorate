@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.storage.film.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 
@@ -17,8 +15,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -56,6 +56,7 @@ public class FilmDbStorage implements FilmStorage {
 
         deleteGenres(film);
         addGenres(film);
+
         jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
@@ -112,40 +113,25 @@ public class FilmDbStorage implements FilmStorage {
         int duration = resultSet.getInt("duration");
         Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"), resultSet.getString("mpa.name"));
 
-        return new Film(id, name, description, releaseDate, duration, mpa, new ArrayList<>());
+        return new Film(id, name, description, releaseDate, duration, mpa, new LinkedHashSet<>());
     }
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
-            String updateGenres = "INSERT INTO film_genre (film_id, genre_id) VALUES (?, ?)";
-            film.setGenres(film.getGenres().stream()
-                    .map(Genre::getId)
-                    .distinct()
-                    .map(id -> new Genre(id, null))
-                    .collect(Collectors.toList()));
-            jdbcTemplate.batchUpdate(updateGenres,
-                    new BatchPreparedStatementSetter() {
-
-                        public void setValues(PreparedStatement ps, int i) throws SQLException {
-                            ps.setLong(1, film.getId());
-                            ps.setInt(2, film.getGenres().get(i).getId());
-                        }
-
-                        public int getBatchSize() {
-                            return film.getGenres().size();
-                        }
+            String updateGenres = "MERGE INTO film_genre (film_id, genre_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(
+                    updateGenres, film.getGenres(), film.getGenres().size(),
+                    (ps, genre) -> {
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, genre.getId());
                     });
             film.getGenres().clear();
-        } else {
-            film.setGenres(Collections.emptyList());
-        }
+        } else film.setGenres(new LinkedHashSet<>());
     }
 
     private void deleteGenres(Film film) {
-        if (film.getGenres() != null) {
-            String deleteGenres = "DELETE FROM film_genre WHERE film_id = ?";
-            jdbcTemplate.update(deleteGenres, film.getId());
-        }
+        String deleteGenres = "DELETE FROM film_genre WHERE film_id = ?";
+        jdbcTemplate.update(deleteGenres, film.getId());
     }
 
 }

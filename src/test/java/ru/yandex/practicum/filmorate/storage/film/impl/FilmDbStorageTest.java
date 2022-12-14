@@ -56,7 +56,7 @@ class FilmDbStorageTest {
                 "userLogin3",
                 "userName3",
                 LocalDate.now().minusYears(40));
-        
+
         userStorage.create(user1);
         userStorage.create(user2);
         userStorage.create(user3);

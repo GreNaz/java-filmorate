@@ -11,7 +11,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
-import java.util.List;
+import java.util.LinkedHashSet;
 
 @Getter
 @Setter
@@ -39,5 +39,5 @@ public class Film {
     @NotNull
     private Mpa mpa;
 
-    private List<Genre> genres;
+    private LinkedHashSet<Genre> genres;
 }
