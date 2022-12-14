@@ -24,7 +24,7 @@ public class GenreService {
     public Genre get(int id) {
         log.info("Send genre with id: " + id);
         return genreDbStorage.get(id).orElseThrow(
-                () -> new ObjectNotFoundException("Genre id : " + id + "not found")
+                () -> new ObjectNotFoundException("Genre id : " + id + " not found")
         );
     }
 }

@@ -21,11 +21,13 @@ public class MpaController {
 
     @GetMapping
     public List<Mpa> getRatings() {
+        log.info("Received a request to get ratings");
         return mpaService.getRatings();
     }
 
     @GetMapping("/{id}")
     public Mpa get(@PathVariable int id) {
+        log.info("Received a request to get rating with id = " + id);
         return mpaService.get(id);
     }
 }
