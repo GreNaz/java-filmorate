@@ -3,9 +3,6 @@ package ru.yandex.practicum.filmorate.storage.film.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -27,7 +24,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
-    private final NamedParameterJdbcTemplate namedJdbcTemplate;
 
     @Override
     public Film create(Film film) {
@@ -54,14 +50,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Film update(Film film) {
-
         String sql = "UPDATE films SET name = ?, description = ?, release_date = ?, " +
                 "duration = ?, mpa_id = ?" +
                 "WHERE FILM_ID = ?";
 
         deleteGenres(film);
         addGenres(film);
-
         jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
@@ -71,36 +65,24 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getFilms() {
-
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
-
-        List<Film> films = jdbcTemplate.query(sql, this::makeFilm);
-
-        loadGenres(films);
-
-        return films;
+        return jdbcTemplate.query(sql, this::makeFilm);
     }
 
     @Override
     public Optional<Film> get(Long id) {
-
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE films.film_id = ?";
 
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-
         if (!filmRows.next()) {
             return Optional.empty();
         }
-
         Film film = jdbcTemplate.queryForObject(sql, this::makeFilm, id);
-
-        loadGenres(Collections.singletonList(film));
-
         return Optional.ofNullable(film);
     }
 
@@ -118,11 +100,7 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(fl.film_id) DESC " +
                 "LIMIT ?";
 
-        List<Film> films = jdbcTemplate.query(sql, this::makeFilm, count);
-
-        loadGenres(films);
-
-        return films;
+        return jdbcTemplate.query(sql, this::makeFilm, count);
     }
 
     private Film makeFilm(ResultSet resultSet, int rowNum) throws SQLException {
@@ -135,29 +113,6 @@ public class FilmDbStorage implements FilmStorage {
         Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"), resultSet.getString("mpa.name"));
 
         return new Film(id, name, description, releaseDate, duration, mpa, new ArrayList<>());
-    }
-
-    private void loadGenres(List<Film> films) {
-
-        String sqlGenres = "SELECT film_id, g2.* " +
-                "FROM FILM_GENRE " +
-                "JOIN genre g2 ON g2.genre_id = film_genre.genre_id " +
-                "WHERE film_id IN (:ids)";
-        List<Long> ids = films.stream()
-                .map(Film::getId)
-                .collect(Collectors.toList());
-        Map<Long, Film> filmMap = films.stream()
-                .collect(Collectors.toMap(Film::getId, film -> film, (a, b) -> b));
-        SqlParameterSource parameters = new MapSqlParameterSource("ids", ids);
-        SqlRowSet sqlRowSet = namedJdbcTemplate.queryForRowSet(sqlGenres, parameters);
-        while (sqlRowSet.next()) {
-            Long filmId = sqlRowSet.getLong("film_id");
-            int genreId = sqlRowSet.getInt("genre_id");
-            String name = sqlRowSet.getString("name");
-            filmMap.get(filmId).getGenres().add(new Genre(genreId, name));
-        }
-        films.stream()
-                .map(film -> film.getGenres().addAll(filmMap.get(film.getId()).getGenres()));
     }
 
     private void addGenres(Film film) {
@@ -181,10 +136,9 @@ public class FilmDbStorage implements FilmStorage {
                         }
                     });
             film.getGenres().clear();
-
-            loadGenres(Collections.singletonList(film));
-
-        } else film.setGenres(Collections.emptyList());
+        } else {
+            film.setGenres(Collections.emptyList());
+        }
     }
 
     private void deleteGenres(Film film) {
