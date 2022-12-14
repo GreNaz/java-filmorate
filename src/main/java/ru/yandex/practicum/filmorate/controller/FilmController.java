@@ -20,19 +20,16 @@ import java.util.List;
 @RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
-    private static final LocalDate FIRST_FILM_RELEASE_DATE = LocalDate.of(1895, 12, 28);
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         log.info("Received a request to add a new film");
-        validation(film);
         return filmService.create(film);
     }
 
     @PutMapping
     public Film update(@Valid @RequestBody Film film) {
         log.info("Received a request to update film with id {}", film.getId());
-        validation(film);
         return filmService.update(film);
     }
 
@@ -64,12 +61,5 @@ public class FilmController {
     public Film removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
         log.info("Received a request to remove like from film with id: {}", filmId);
         return filmService.removeLike(filmId, userId);
-    }
-
-    private void validation(Film film) {
-        if (film.getReleaseDate().isBefore(FIRST_FILM_RELEASE_DATE)) {
-            log.error("Realise date must be after :  {}", FIRST_FILM_RELEASE_DATE);
-            throw new ValidationException("Realise date must be after :  " + FIRST_FILM_RELEASE_DATE);
-        }
     }
 }

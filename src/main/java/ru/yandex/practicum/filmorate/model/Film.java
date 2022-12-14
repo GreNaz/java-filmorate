@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
+import ru.yandex.practicum.filmorate.model.annotation.ReleaseDate;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
@@ -29,6 +30,7 @@ public class Film {
     private String description;
 
     @NotNull
+    @ReleaseDate
     private LocalDate releaseDate;
 
     @Min(value = 1, message = "Received negative or equal to 0 movie duration")
