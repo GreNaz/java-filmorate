@@ -14,7 +14,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.impl.MpaDbStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -126,35 +125,14 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    @Override
-    public Film removeLike(Long filmId, Long userId) {
+    private Film makeFilm(ResultSet resultSet, int rowNum) throws SQLException {
 
-        String sql = "DELETE FROM films_likes " +
-                "WHERE film_id = ? AND user_id = ?";
-
-        jdbcTemplate.update(sql, filmId, userId);
-
-        return get(filmId).get();
-    }
-
-    @Override
-    public Film createLike(Long filmId, Long userId) {
-
-        String sql = "INSERT INTO films_likes (film_id, user_id) VALUES (?, ?)";
-
-        jdbcTemplate.update(sql, filmId, userId);
-
-        return get(filmId).get();
-    }
-
-    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
-
-        int id = rs.getInt("film_id");
-        String name = rs.getString("name");
-        String description = rs.getString("description");
-        LocalDate releaseDate = rs.getDate("release_date").toLocalDate();
-        int duration = rs.getInt("duration");
-        Mpa mpa = new Mpa(rs.getInt("mpa.mpa_id"), rs.getString("mpa.name"));
+        int id = resultSet.getInt("film_id");
+        String name = resultSet.getString("name");
+        String description = resultSet.getString("description");
+        LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
+        int duration = resultSet.getInt("duration");
+        Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"), resultSet.getString("mpa.name"));
 
         return new Film(id, name, description, releaseDate, duration, mpa, new ArrayList<>());
     }

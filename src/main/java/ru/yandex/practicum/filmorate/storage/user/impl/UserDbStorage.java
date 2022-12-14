@@ -27,8 +27,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getUsers() {
         String sql = "select * from USERS";
-
-        return jdbcTemplate.query(sql, this::makeUser);
+        return jdbcTemplate.query(sql, UserDbStorage::makeUser);
     }
 
     @Override
@@ -66,50 +65,10 @@ public class UserDbStorage implements UserStorage {
         if (!filmRows.next()) {
             return Optional.empty();
         }
-
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, this::makeUser, id));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, UserDbStorage::makeUser, id));
     }
 
-    @Override
-    public List<User> getFriends(Long id) {
-        String sql = "SELECT USERS.USER_ID, email, login, name, birthday " +
-                "FROM USERS " +
-                "LEFT JOIN friendship f on users.USER_ID = f.friend_id " +
-                "where f.user_id = ?";
-        return jdbcTemplate.query(sql, this::makeUser, id);
-    }
-
-    @Override
-    public User addFriend(Long followingId, Long followerId) {
-        String sqlForWrite = "INSERT INTO FRIENDSHIP (USER_ID, FRIEND_ID) " +
-                "VALUES (?, ?)";
-        jdbcTemplate.update(sqlForWrite, followingId, followerId);
-
-        return get(followerId).get();
-    }
-
-    @Override
-    public User deleteFriend(Long followingId, Long followerId) {
-        String sql = "DELETE FROM FRIENDSHIP WHERE USER_ID = ? AND FRIEND_ID = ?";
-        jdbcTemplate.update(sql, followingId, followerId);
-        return get(followerId).get();
-    }
-
-    @Override
-    public List<User> mutualFriends(Long firstId, Long secondId) {
-        String sql = "SELECT u.USER_ID, email, login, name, birthday " +
-                "FROM friendship AS f " +
-                "LEFT JOIN users u ON u.USER_ID = f.friend_id " +
-                "WHERE f.user_id = ? AND f.friend_id IN ( " +
-                "SELECT friend_id " +
-                "FROM friendship AS f " +
-                "LEFT JOIN users AS u ON u.USER_ID = f.friend_id " +
-                "WHERE f.user_id = ? )";
-
-        return jdbcTemplate.query(sql, this::makeUser, firstId, secondId);
-    }
-
-    private User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
+    public static User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
         int id = resultSet.getInt("user_id");
         String email = resultSet.getString("email");
         String login = resultSet.getString("login");

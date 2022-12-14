@@ -14,12 +14,4 @@ public interface UserStorage {
     List<User> getUsers();
 
     Optional<User> get(Long id);
-
-    List<User> getFriends(Long id);
-
-    List<User> mutualFriends(Long fromUser, Long toUser);
-
-    User deleteFriend(Long fromUser, Long toUser);
-
-    User addFriend(Long fromUser, Long toUser);
 }

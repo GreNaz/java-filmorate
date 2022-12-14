@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
@@ -21,24 +22,27 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
         validation(fromUser, toUser);
-        return userStorage.addFriend(fromUser, toUser);
+        friendStorage.addFriend(fromUser, toUser);
+        return get(fromUser);
     }
 
     public User deleteFriend(Long fromUser, Long toUser) {
         validation(fromUser, toUser);
-        return userStorage.deleteFriend(fromUser, toUser);
+        friendStorage.deleteFriend(fromUser, toUser);
+        return get(fromUser);
     }
 
     public List<User> mutualFriends(Long fromUser, Long toUser) {
         validation(fromUser, toUser);
-        return userStorage.mutualFriends(fromUser, toUser);
+        return friendStorage.mutualFriends(fromUser, toUser);
     }
 
     public List<User> getFriends(Long id) {
-        return userStorage.getFriends(id);
+        return friendStorage.getFriends(id);
     }
 
     public User create(User user) {
