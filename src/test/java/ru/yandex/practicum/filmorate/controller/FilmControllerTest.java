@@ -1,0 +1,180 @@
+package ru.yandex.practicum.filmorate.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.yandex.practicum.filmorate.helper.TestDataHelper.*;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+@AutoConfigureTestDatabase
+
+public class FilmControllerTest {
+    private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
+    private final MockMvc mockMvc;
+    private final ObjectMapper objectMapper;
+
+    @Test
+    void findAllTest() throws Exception {
+        filmStorage.create(FILM);
+        mockMvc.perform(
+                        get("/films")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void addFilm() throws Exception {
+        mockMvc.perform(
+                        post("/films")
+                                .content(objectMapper.writeValueAsString(FILM))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Film"))
+                .andExpect(jsonPath("$.description").value("good film"))
+                .andExpect(jsonPath("$.releaseDate").value("2020-05-05"))
+                .andExpect(jsonPath("$.duration").value(120));
+    }
+
+    @Test
+    void filmUpdateTest() throws Exception {
+        filmStorage.create(FILM_2);
+
+        mockMvc.perform(
+                        put("/films")
+                                .content(objectMapper.writeValueAsString(FILM))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        get("/films/1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Film"))
+                .andExpect(jsonPath("$.description").value("good film"))
+                .andExpect(jsonPath("$.releaseDate").value("2020-05-05"))
+                .andExpect(jsonPath("$.duration").value(120));
+    }
+
+    @Test
+    void filmNotFoundForUpdateTest() throws Exception {
+        FILM.setId(7);
+        mockMvc.perform(
+                        put("/films")
+                                .content(objectMapper.writeValueAsString(FILM))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertEquals("Film id = 7 was not found",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+    }
+
+    @Test
+    void getFilmByIdTest() throws Exception {
+
+        mockMvc.perform(
+                        get("/films/1")
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Film"))
+                .andExpect(jsonPath("$.description").value("good film"))
+                .andExpect(jsonPath("$.releaseDate").value("2020-05-05"))
+                .andExpect(jsonPath("$.duration").value(120))
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    void getFilmByIdNotFoundExceptionTest() throws Exception {
+
+        mockMvc.perform(
+                        get("/films/18")
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertEquals("Film id = 18 was not found",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+    }
+
+    @Test
+    void addLikeAndRemoveTest() throws Exception {
+        USER.setEmail("test4@test.ru");
+        USER.setLogin("login4");
+        userStorage.create(USER);
+        filmStorage.create(FILM);
+
+        mockMvc.perform(
+                        put("/films/1/like/1")
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        delete("/films/1/like/1")
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void addLikeNotFoundExceptionTest() throws Exception {
+
+        mockMvc.perform(
+                        put("/films/29/like/2")
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertEquals("Film id = 29 was not found",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+    }
+
+    @Test
+    void removeLikeNotFoundExceptionTest() throws Exception {
+
+        mockMvc.perform(
+                        delete("/films/17/like/24")
+                )
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertEquals("Film id = 17 was not found",
+                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+
+    }
+
+    @Test
+    void getBestFilmTest() throws Exception {
+        FILM_2.setId(2);
+        filmStorage.update(FILM_2);
+
+        mockMvc.perform(
+                        put("/films/2/like/1")
+                )
+                .andExpect(status().isOk());
+
+        mockMvc.perform(
+                        get("/films/popular")
+                )
+                .andExpect(status().isOk())
+                .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(0).getName(), "2 Film"))
+                .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(1).getName(), "Film"));
+    }
+}

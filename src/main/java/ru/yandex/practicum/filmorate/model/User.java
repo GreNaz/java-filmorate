@@ -28,4 +28,5 @@ public class User {
     @NotNull(message = "Date of birth not specified")
     @PastOrPresent(message = "Received date of birth has not yet arrived")
     private LocalDate birthday;
+
 }

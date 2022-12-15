@@ -1,9 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.yandex.practicum.filmorate.model.annotation.ReleaseDate;
 
 import javax.validation.constraints.Min;
@@ -15,6 +12,7 @@ import java.util.LinkedHashSet;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Film {
@@ -35,7 +33,7 @@ public class Film {
 
     @Min(value = 1, message = "Received negative or equal to 0 movie duration")
     private int duration;
-    
+
     @NotNull
     private Mpa mpa;
 
