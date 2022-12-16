@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -79,6 +80,15 @@ public class ErrorHandler {
         log.error("Error : {}", e.getMessage());
         return new ErrorResponse(
                 "Internal server error"
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleDataAccessException(final DataAccessException e) {
+        log.error("Error : {}", e.getMessage());
+        return new ErrorResponse(
+                "TEST MESSAGE"
         );
     }
 }

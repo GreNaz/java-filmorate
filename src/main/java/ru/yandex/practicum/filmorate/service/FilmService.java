@@ -31,7 +31,7 @@ public class FilmService {
     private final LikeStorage likeStorage;
 
     public Film createLike(Long filmId, Long userId) {
-        validation(userId, filmId);
+        //validation(userId, filmId);
         log.info("Start operation with like from " + userStorage.get(userId).get().getLogin() +
                 " to film " + filmStorage.get(filmId).get().getName());
         likeStorage.createLike(filmId, userId);
@@ -39,7 +39,7 @@ public class FilmService {
     }
 
     public Film removeLike(Long filmId, Long userId) {
-        validation(userId, filmId);
+        //validation(userId, filmId);
         likeStorage.removeLike(filmId, userId);
         return get(filmId);
     }
@@ -52,7 +52,7 @@ public class FilmService {
     }
 
     public Film update(Film film) {
-        validation(film);
+        //validation(film);
         mpaStorage.injectMpa(film);
         Film newFilm = filmStorage.update(film);
         genreStorage.loadGenres(Collections.singletonList(newFilm));
@@ -78,17 +78,17 @@ public class FilmService {
         return films;
     }
 
-    private void validation(Long userId, Long filmId) {
-        log.debug("Start of validation");
-        get(filmId);
-        if (userStorage.get(userId).isEmpty()) {
-            log.error("An error has occurred. Invalid input user data");
-            throw new UserAlreadyExistException("User id = " + userId + " was not found");
-        }
-        log.debug("Successful validation");
-    }
+//    private void validation(Long userId, Long filmId) {
+//        log.debug("Start of validation");
+//        get(filmId);
+//        if (userStorage.get(userId).isEmpty()) {
+//            log.error("An error has occurred. Invalid input user data");
+//            throw new UserAlreadyExistException("User id = " + userId + " was not found");
+//        }
+//        log.debug("Successful validation");
+//    }
 
-    private void validation(Film film) {
-        get(film.getId());
-    }
+//    private void validation(Film film) {
+//        get(film.getId());
+//    }
 }

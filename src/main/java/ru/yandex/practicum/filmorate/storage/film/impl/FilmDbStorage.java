@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -57,9 +58,13 @@ public class FilmDbStorage implements FilmStorage {
         deleteGenres(film);
         addGenres(film);
 
-        jdbcTemplate.update(sql,
+        int resultUpdate = jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
+
+        if (resultUpdate == 0){
+            throw new FilmAlreadyExistException("NOT FOUND FILM: " + film);
+        }
 
         return film;
     }
