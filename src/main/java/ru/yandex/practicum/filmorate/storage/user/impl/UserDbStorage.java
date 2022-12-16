@@ -12,12 +12,11 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.userMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getUsers() {
         String sql = "select * from USERS";
-        return jdbcTemplate.query(sql, UserDbStorage::makeUser);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet));
     }
 
     @Override
@@ -61,7 +60,7 @@ public class UserDbStorage implements UserStorage {
                 user.getBirthday(),
                 user.getId());
 
-        if (updateResult == 0){
+        if (updateResult == 0) {
             throw new UserAlreadyExistException("User " + user + " was not found");
         }
 
@@ -75,15 +74,6 @@ public class UserDbStorage implements UserStorage {
         if (!filmRows.next()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, UserDbStorage::makeUser, id));
-    }
-
-    public static User makeUser(ResultSet resultSet, int rowNum) throws SQLException {
-        int id = resultSet.getInt("user_id");
-        String email = resultSet.getString("email");
-        String login = resultSet.getString("login");
-        String name = resultSet.getString("name");
-        LocalDate birthday = resultSet.getDate("birthday").toLocalDate();
-        return new User(id, email, login, name, birthday);
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> userMapper(resultSet), id));
     }
 }

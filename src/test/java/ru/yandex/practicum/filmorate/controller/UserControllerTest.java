@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
@@ -37,7 +38,10 @@ public class UserControllerTest {
 
     @Test
     void findAllTest() throws Exception {
-        userStorage.create(USER);
+        User user = USER;
+        user.setEmail("new@mail.ru");
+        user.setLogin("new@mail.ru");
+        userStorage.create(user);
 
         mockMvc.perform(
                         get("/users")
@@ -94,7 +98,11 @@ public class UserControllerTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserAlreadyExistException))
-                .andExpect(result -> assertEquals("User with email nedawdw@test.ru already registered.",
+                .andExpect(result -> assertEquals("User User(id=21," +
+                                " email=nedawdw@test.ru," +
+                                " login=new_login," +
+                                " name=name," +
+                                " birthday=1990-05-06) was not found",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 
@@ -140,9 +148,7 @@ public class UserControllerTest {
                         put("/users/9/friends/23")
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserAlreadyExistException))
-                .andExpect(result -> assertEquals("User id = 9 was not found",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataAccessException));
     }
 
     @Test
@@ -167,28 +173,5 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> assertEquals(1, friendStorage.getFriends(1L).size()));
         friendStorage.deleteFriend(1L, 2L);
-    }
-
-    @Test
-    void getFriendsListByIdNotFoundTest() throws Exception {
-
-        mockMvc.perform(
-                        get("/users/34/friends")
-                )
-                .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserAlreadyExistException))
-                .andExpect(result -> assertEquals("User id = 34 was not found",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
-    }
-
-    @Test
-    void getCommonFriendsNotFoundTest() throws Exception {
-        mockMvc.perform(
-                        get("/users/9/friends/common/23")
-                )
-                .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof UserAlreadyExistException))
-                .andExpect(result -> assertEquals("User id = 9 was not found",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 }

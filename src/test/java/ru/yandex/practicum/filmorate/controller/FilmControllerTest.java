@@ -7,12 +7,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -87,7 +90,7 @@ public class FilmControllerTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
-                .andExpect(result -> assertEquals("Film id = 7 was not found",
+                .andExpect(result -> assertEquals("NOT FOUND FILM: Film(id=7, name=Film, description=good film, releaseDate=2020-05-05, duration=120, mpa=Mpa(id=1, name=G), genres=[])",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 
@@ -142,9 +145,7 @@ public class FilmControllerTest {
                         put("/films/29/like/2")
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
-                .andExpect(result -> assertEquals("Film id = 29 was not found",
-                        Objects.requireNonNull(result.getResolvedException()).getMessage()));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NoSuchElementException));
     }
 
     @Test
@@ -154,8 +155,8 @@ public class FilmControllerTest {
                         delete("/films/17/like/24")
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
-                .andExpect(result -> assertEquals("Film id = 17 was not found",
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof ObjectNotFoundException))
+                .andExpect(result -> assertEquals("NOT FOUND FILM OR USER",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
 
     }

@@ -11,12 +11,12 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.genreMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> getGenres() {
         String sql = "SELECT * FROM genre";
-        return jdbcTemplate.query(sql, GenreDbStorage::makeGenre);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> genreMapper(resultSet));
     }
 
     @Override
@@ -38,7 +38,10 @@ public class GenreDbStorage implements GenreStorage {
         if (!genreRows.next()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, GenreDbStorage::makeGenre, id));
+
+        Genre genre = jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> genreMapper(resultSet), id);
+
+        return Optional.ofNullable(genre);
     }
 
     @Override
@@ -67,11 +70,5 @@ public class GenreDbStorage implements GenreStorage {
 
             filmMap.get(filmId).getGenres().add(new Genre(genreId, name));
         }
-    }
-
-    public static Genre makeGenre(ResultSet resultSet, int rowNum) throws SQLException {
-        int id = resultSet.getInt("genre_id");
-        String name = resultSet.getString("name");
-        return new Genre(id, name);
     }
 }

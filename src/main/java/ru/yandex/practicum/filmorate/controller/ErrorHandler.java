@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @RestControllerAdvice
@@ -51,6 +52,7 @@ public class ErrorHandler {
                 String.format("Error with \"%s\".", e.getParameter())
         );
     }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleObjectNotFoundException(final ObjectNotFoundException e) {
@@ -88,7 +90,16 @@ public class ErrorHandler {
     public ErrorResponse handleDataAccessException(final DataAccessException e) {
         log.error("Error : {}", e.getMessage());
         return new ErrorResponse(
-                "TEST MESSAGE"
+                "NOT FOUND DataAccessException"
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoSuchElementException(final NoSuchElementException e) {
+        log.error("Error : {}", e.getMessage());
+        return new ErrorResponse(
+                "NoSuchElementException"
         );
     }
 }

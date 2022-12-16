@@ -6,9 +6,11 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
-import ru.yandex.practicum.filmorate.storage.user.impl.UserDbStorage;
+import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.util.List;
+
+import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.userMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -21,7 +23,7 @@ public class FriendDbStorage implements FriendStorage {
                 "FROM USERS " +
                 "LEFT JOIN friendship f on users.USER_ID = f.friend_id " +
                 "where f.user_id = ?";
-        return jdbcTemplate.query(sql, UserDbStorage::makeUser, id);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet), id);
     }
 
     @Override
@@ -60,7 +62,7 @@ public class FriendDbStorage implements FriendStorage {
                 "LEFT JOIN users AS u ON u.USER_ID = f.friend_id " +
                 "WHERE f.user_id = ? )";
 
-        return jdbcTemplate.query(sql, UserDbStorage::makeUser, firstId, secondId);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet), firstId, secondId);
     }
 
 }

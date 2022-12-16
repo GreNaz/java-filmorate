@@ -8,18 +8,17 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
+import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.filmMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -62,7 +61,7 @@ public class FilmDbStorage implements FilmStorage {
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
 
-        if (resultUpdate == 0){
+        if (resultUpdate == 0) {
             throw new FilmAlreadyExistException("NOT FOUND FILM: " + film);
         }
 
@@ -74,7 +73,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
-        return jdbcTemplate.query(sql, this::makeFilm);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> filmMapper(resultSet));
     }
 
     @Override
@@ -88,7 +87,7 @@ public class FilmDbStorage implements FilmStorage {
         if (!filmRows.next()) {
             return Optional.empty();
         }
-        Film film = jdbcTemplate.queryForObject(sql, this::makeFilm, id);
+        Film film = jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> filmMapper(resultSet), id);
         return Optional.ofNullable(film);
     }
 
@@ -106,20 +105,9 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(fl.film_id) DESC " +
                 "LIMIT ?";
 
-        return jdbcTemplate.query(sql, this::makeFilm, count);
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> filmMapper(resultSet), count);
     }
 
-    private Film makeFilm(ResultSet resultSet, int rowNum) throws SQLException {
-
-        int id = resultSet.getInt("film_id");
-        String name = resultSet.getString("name");
-        String description = resultSet.getString("description");
-        LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
-        int duration = resultSet.getInt("duration");
-        Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"), resultSet.getString("mpa.name"));
-
-        return new Film(id, name, description, releaseDate, duration, mpa, new LinkedHashSet<>());
-    }
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
