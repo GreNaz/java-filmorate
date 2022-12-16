@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.friends.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.impl.UserDbStorage;
@@ -27,13 +28,25 @@ public class FriendDbStorage implements FriendStorage {
     public void addFriend(Long followingId, Long followerId) {
         String sqlForWrite = "MERGE INTO FRIENDSHIP (USER_ID, FRIEND_ID) " +
                 "VALUES (?, ?)";
-        jdbcTemplate.update(sqlForWrite, followingId, followerId);
+
+        int resultUpdate = jdbcTemplate.update(sqlForWrite, followingId, followerId);
+
+        if (resultUpdate == 0) {
+            throw new UserAlreadyExistException("not found user with id = " + followerId
+                    + "or with id = " + followingId);
+        }
     }
 
     @Override
     public void deleteFriend(Long followingId, Long followerId) {
         String sql = "DELETE FROM FRIENDSHIP WHERE USER_ID = ? AND FRIEND_ID = ?";
-        jdbcTemplate.update(sql, followingId, followerId);
+
+        int resultUpdate = jdbcTemplate.update(sql, followingId, followerId);
+
+        if (resultUpdate == 0) {
+            throw new UserAlreadyExistException("not found user with id = " + followerId
+                    + "or with id = " + followingId);
+        }
     }
 
     @Override

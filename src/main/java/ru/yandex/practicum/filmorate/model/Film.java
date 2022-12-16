@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 
 @Getter
 @Setter
+@ToString
 @Builder
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
