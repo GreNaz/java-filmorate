@@ -64,9 +64,9 @@ public class GenreDbStorage implements GenreStorage {
             Long filmId = sqlRowSet.getLong("film_id");
             int genreId = sqlRowSet.getInt("genre_id");
             String name = sqlRowSet.getString("name");
+
             filmMap.get(filmId).getGenres().add(new Genre(genreId, name));
         }
-        films.forEach(film -> film.getGenres().addAll(filmMap.get(film.getId()).getGenres()));
     }
 
     public static Genre makeGenre(ResultSet resultSet, int rowNum) throws SQLException {
