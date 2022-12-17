@@ -6,10 +6,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Responsible for such operations with users,
@@ -22,33 +22,32 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class UserService {
     private final UserStorage userStorage;
+    private final FriendStorage friendStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
-        validation(fromUser, toUser);
-        return userStorage.addFriend(fromUser, toUser);
+        friendStorage.addFriend(fromUser, toUser);
+        return get(fromUser);
     }
 
     public User deleteFriend(Long fromUser, Long toUser) {
-        validation(fromUser, toUser);
-        return userStorage.deleteFriend(fromUser, toUser);
+        friendStorage.deleteFriend(fromUser, toUser);
+        return get(fromUser);
     }
 
     public List<User> mutualFriends(Long fromUser, Long toUser) {
-        validation(fromUser, toUser);
-        return userStorage.mutualFriends(fromUser, toUser);
+        return friendStorage.mutualFriends(fromUser, toUser);
     }
 
-    public Set<User> getFriends(Long id) {
-        return userStorage.getFriends(id);
+    public List<User> getFriends(Long id) {
+        return friendStorage.getFriends(id);
     }
 
     public User create(User user) {
-        validationNew(user);
+        usernameValidation(user);
         return userStorage.create(user);
     }
 
     public User update(User user) {
-        validationNew(user);
         return userStorage.update(user);
     }
 
@@ -61,23 +60,10 @@ public class UserService {
                 () -> new UserAlreadyExistException("User id = " + id + " was not found"));
     }
 
-    private void validationNew(User user) {
-
+    private void usernameValidation(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("Username equated to login: " + "name = " + user.getLogin());
         }
-
-        if (userStorage.getUsers().contains(user)) {
-            log.error("User with email " + user.getEmail() + " already registered.");
-            throw new UserAlreadyExistException(String.format(
-                    "User with email %s already registered.",
-                    user.getEmail()));
-        }
-    }
-
-    private void validation(Long fromUser, Long toUser) {
-        get(fromUser);
-        get(toUser);
     }
 }

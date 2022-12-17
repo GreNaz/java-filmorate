@@ -6,17 +6,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface FilmStorage {
-    Film create(Film film); //  добавление нового фильма
+    Film create(Film film);
 
-    Film update(Film film); // модификация существующего фильма
+    Film update(Film film);
 
-    List<Film> getFilms(); // запрос списка всех фильмов
+    List<Film> getFilms();
 
-    Optional<Film> get(Long id); // запрос фильма по id
+    Optional<Film> get(Long id);
 
     List<Film> getPopular(int count);
-
-    Film removeLike(Long filmId, Long userId);
-
-    Film createLike(Long filmId, Long userId);
 }

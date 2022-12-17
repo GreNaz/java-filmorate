@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.*;
 
 import javax.validation.ConstraintViolationException;
 import javax.validation.ValidationException;
+import java.util.NoSuchElementException;
 
 @Slf4j
 @RestControllerAdvice
@@ -53,11 +55,16 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleObjectNotFoundException(final ObjectNotFoundException e) {
+        log.error("Error : {}", e.getMessage());
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleUserAlreadyExistException(final UserAlreadyExistException e) {
         log.error("Error : {}", e.getMessage());
-        return new ErrorResponse(
-                e.getMessage()
-        );
+        return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler
@@ -75,6 +82,24 @@ public class ErrorHandler {
         log.error("Error : {}", e.getMessage());
         return new ErrorResponse(
                 "Internal server error"
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleDataAccessException(final DataAccessException e) {
+        log.error("Error : {}", e.getMessage());
+        return new ErrorResponse(
+                "NOT FOUND DataAccessException"
+        );
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNoSuchElementException(final NoSuchElementException e) {
+        log.error("Error : {}", e.getMessage());
+        return new ErrorResponse(
+                "NoSuchElementException"
         );
     }
 }

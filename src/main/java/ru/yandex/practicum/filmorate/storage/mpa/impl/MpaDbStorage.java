@@ -1,0 +1,42 @@
+package ru.yandex.practicum.filmorate.storage.mpa.impl;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
+
+import java.util.List;
+import java.util.Optional;
+
+import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.mpaMapper;
+
+@Repository
+@RequiredArgsConstructor
+public class MpaDbStorage implements MpaStorage {
+    private final JdbcTemplate jdbcTemplate;
+
+    @Override
+    public List<Mpa> getRatings() {
+        String sql = "SELECT * FROM mpa";
+        return jdbcTemplate.query(sql, (resultSet, rowNum) -> mpaMapper(resultSet));
+    }
+
+    @Override
+    public Optional<Mpa> get(int id) {
+        String sql = "SELECT * FROM mpa WHERE MPA_ID = ?";
+        SqlRowSet mpaRows = jdbcTemplate.queryForRowSet(sql, id);
+        if (!mpaRows.next()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> mpaMapper(resultSet), id));
+    }
+
+    public void injectMpa(Film film) {
+        film.setMpa(jdbcTemplate.queryForObject("SELECT * FROM mpa WHERE MPA_ID = ?",
+                (resultSet, rowNum) -> mpaMapper(resultSet), film.getMpa().getId()));
+    }
+}

@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 @Slf4j
 @RestController
@@ -55,7 +54,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}/friends")
-    public Set<User> getFriends(
+    public List<User> getFriends(
             @PathVariable Long id) {
         log.info("Received a request to get friends user with id {}", id);
         return userService.getFriends(id);
