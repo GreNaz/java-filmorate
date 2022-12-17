@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.util.mapper;
 
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -9,7 +10,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
-
+@UtilityClass
 public class Mapper {
     public static Film filmMapper(ResultSet resultSet) throws SQLException {
         int id = resultSet.getInt("film_id");
