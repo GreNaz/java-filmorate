@@ -12,8 +12,6 @@ import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 import java.util.List;
 import java.util.Optional;
 
-import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.mpaMapper;
-
 @Repository
 @RequiredArgsConstructor
 public class MpaDbStorage implements MpaStorage {
@@ -22,7 +20,7 @@ public class MpaDbStorage implements MpaStorage {
     @Override
     public List<Mpa> getRatings() {
         String sql = "SELECT * FROM mpa";
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> mpaMapper(resultSet));
+        return jdbcTemplate.query(sql, Mapper::mpaMapper);
     }
 
     @Override
@@ -32,11 +30,11 @@ public class MpaDbStorage implements MpaStorage {
         if (!mpaRows.next()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> mpaMapper(resultSet), id));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, Mapper::mpaMapper, id));
     }
 
     public void injectMpa(Film film) {
         film.setMpa(jdbcTemplate.queryForObject("SELECT * FROM mpa WHERE MPA_ID = ?",
-                (resultSet, rowNum) -> mpaMapper(resultSet), film.getMpa().getId()));
+                Mapper::mpaMapper, film.getMpa().getId()));
     }
 }

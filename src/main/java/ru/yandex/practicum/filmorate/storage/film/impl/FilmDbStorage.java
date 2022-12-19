@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -17,8 +18,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.filmMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -73,7 +72,9 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> filmMapper(resultSet));
+
+        return jdbcTemplate.query(sql, Mapper::filmMapper);
+
     }
 
     @Override
@@ -84,11 +85,17 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE films.film_id = ?";
 
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
+
         if (!filmRows.next()) {
             return Optional.empty();
         }
-        Film film = jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> filmMapper(resultSet), id);
-        return Optional.ofNullable(film);
+
+        try {
+            Film film = jdbcTemplate.queryForObject(sql, Mapper::filmMapper, id);
+            return Optional.ofNullable(film);
+        } catch (DataAccessException dataAccessException) {
+            return Optional.empty();
+        }
     }
 
     @Override
@@ -105,7 +112,7 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY COUNT(fl.film_id) DESC " +
                 "LIMIT ?";
 
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> filmMapper(resultSet), count);
+        return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
 
 

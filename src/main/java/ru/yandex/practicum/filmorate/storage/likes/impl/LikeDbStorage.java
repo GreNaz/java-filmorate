@@ -6,8 +6,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 
-import java.util.NoSuchElementException;
-
 @Repository
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {

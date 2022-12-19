@@ -10,8 +10,6 @@ import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.util.List;
 
-import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.userMapper;
-
 @Repository
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
@@ -23,7 +21,7 @@ public class FriendDbStorage implements FriendStorage {
                 "FROM USERS " +
                 "LEFT JOIN friendship f on users.USER_ID = f.friend_id " +
                 "where f.user_id = ?";
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet), id);
+        return jdbcTemplate.query(sql, Mapper::userMapper, id);
     }
 
     @Override
@@ -62,7 +60,7 @@ public class FriendDbStorage implements FriendStorage {
                 "LEFT JOIN users AS u ON u.USER_ID = f.friend_id " +
                 "WHERE f.user_id = ? )";
 
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet), firstId, secondId);
+        return jdbcTemplate.query(sql, Mapper::userMapper, firstId, secondId);
     }
 
 }

@@ -25,42 +25,51 @@ public class UserService {
     private final FriendStorage friendStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
+        log.info("Adding a user with an id = {}, as a friend to a user with an id = {}", toUser, fromUser);
         friendStorage.addFriend(fromUser, toUser);
         return get(fromUser);
     }
 
     public User deleteFriend(Long fromUser, Long toUser) {
+        log.info("Deleting a user with an id = {}, in from friends to a user with an id = {}", toUser, fromUser);
         friendStorage.deleteFriend(fromUser, toUser);
         return get(fromUser);
     }
 
     public List<User> mutualFriends(Long fromUser, Long toUser) {
+        log.info("List of mutual friends");
         return friendStorage.mutualFriends(fromUser, toUser);
     }
 
     public List<User> getFriends(Long id) {
+        log.info("List of friends of the user with id = {}", id);
         return friendStorage.getFriends(id);
     }
 
     public User create(User user) {
+        log.info("Creating a new user = {}", user);
         usernameValidation(user);
         return userStorage.create(user);
     }
 
     public User update(User user) {
+        log.info("Updating a user = {}", user);
         return userStorage.update(user);
     }
 
     public List<User> getUsers() {
+        log.info("List of all users");
         return userStorage.getUsers();
     }
 
     public User get(Long id) {
+        log.info("Getting user id = {}", id);
         return userStorage.get(id).orElseThrow(
                 () -> new UserAlreadyExistException("User id = " + id + " was not found"));
     }
 
     private void usernameValidation(User user) {
+        log.info("Username validation");
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.info("Username equated to login: " + "name = " + user.getLogin());

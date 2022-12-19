@@ -10,13 +10,12 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.genreMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -28,7 +27,7 @@ public class GenreDbStorage implements GenreStorage {
     @Override
     public List<Genre> getGenres() {
         String sql = "SELECT * FROM genre";
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> genreMapper(resultSet));
+        return jdbcTemplate.query(sql, Mapper::genreMapper);
     }
 
     @Override
@@ -39,7 +38,7 @@ public class GenreDbStorage implements GenreStorage {
             return Optional.empty();
         }
 
-        Genre genre = jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> genreMapper(resultSet), id);
+        Genre genre = jdbcTemplate.queryForObject(sql, Mapper::genreMapper, id);
 
         return Optional.ofNullable(genre);
     }

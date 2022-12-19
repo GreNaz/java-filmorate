@@ -9,14 +9,13 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
-import static ru.yandex.practicum.filmorate.storage.util.mapper.Mapper.userMapper;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,7 +26,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<User> getUsers() {
         String sql = "select * from USERS";
-        return jdbcTemplate.query(sql, (resultSet, rowNum) -> userMapper(resultSet));
+        return jdbcTemplate.query(sql, Mapper::userMapper);
     }
 
     @Override
@@ -74,6 +73,6 @@ public class UserDbStorage implements UserStorage {
         if (!filmRows.next()) {
             return Optional.empty();
         }
-        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, (resultSet, rowNum) -> userMapper(resultSet), id));
+        return Optional.ofNullable(jdbcTemplate.queryForObject(sql, Mapper::userMapper, id));
     }
 }

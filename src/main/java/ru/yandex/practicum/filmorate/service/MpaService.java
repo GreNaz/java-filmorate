@@ -23,8 +23,9 @@ public class MpaService {
     }
 
     public Mpa get(int id) {
+        log.info("Getting genre with id = {}", id);
         return mpaDbStorage.get(id).orElseThrow(
-                ()-> new ObjectNotFoundException("Rating not found: " + id));
+                () -> new ObjectNotFoundException("Rating not found: " + id));
     }
 
 }
