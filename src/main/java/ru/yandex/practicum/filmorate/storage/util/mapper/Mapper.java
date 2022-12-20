@@ -1,10 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.util.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,7 +19,13 @@ public class Mapper {
         Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"),
                 resultSet.getString("mpa.name"));
 
-        return new Film(id, name, description, releaseDate, duration, mpa, new LinkedHashSet<>());
+        return new Film(id, name, description, releaseDate, duration, mpa, new LinkedHashSet<>(), new LinkedHashSet<>());
+    }
+
+    public static Director directorMapper(ResultSet resultSet, int row) throws SQLException {
+        int id = resultSet.getInt("director_id");
+        String name = resultSet.getString("name");
+        return new Director(id, name);
     }
 
     public static Genre genreMapper(ResultSet resultSet, int row) throws SQLException {

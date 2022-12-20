@@ -44,6 +44,8 @@ public class FilmDbStorage implements FilmStorage {
 
         addGenres(film);
 
+        addDirectors(film);
+
         return film;
     }
 
@@ -55,6 +57,9 @@ public class FilmDbStorage implements FilmStorage {
 
         deleteGenres(film);
         addGenres(film);
+
+        deleteDirectors(film);
+        addDirectors(film);
 
         int resultUpdate = jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
@@ -132,6 +137,24 @@ public class FilmDbStorage implements FilmStorage {
     private void deleteGenres(Film film) {
         String deleteGenres = "DELETE FROM film_genre WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
+    }
+
+    private void addDirectors(Film film) {
+        if (film.getDirectors() != null) {
+            String updateDirectors = "MERGE INTO film_director (film_id, director_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(
+                    updateDirectors, film.getDirectors(), film.getDirectors().size(),
+                    (ps, director) -> {
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, director.getId());
+                    });
+            film.getDirectors().clear();
+        } else film.setDirectors(new LinkedHashSet<>());
+    }
+
+    private void deleteDirectors(Film film) {
+        String deleteDirectors = "DELETE FROM film_director WHERE film_id = ?";
+        jdbcTemplate.update(deleteDirectors, film.getId());
     }
 
 }

@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS film_director
     film_id  BIGINT not null,
     director_id int    not null,
     PRIMARY KEY (director_id, film_id),
-    constraint fk_film_id
+    constraint fkk_film_id
         foreign key (film_id)
             references films (film_id),
     constraint fk_director_id
