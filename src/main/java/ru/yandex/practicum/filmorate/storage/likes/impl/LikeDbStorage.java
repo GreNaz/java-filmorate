@@ -2,9 +2,12 @@ package ru.yandex.practicum.filmorate.storage.likes.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
+
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,6 +35,16 @@ public class LikeDbStorage implements LikeStorage {
         if (resultUpdate == 0) {
             throw new ObjectNotFoundException("NOT FOUND FILM OR USER");
         }
+    }
 
+    @Override
+    public Integer getLikesNumber(Long filmId) {
+        String sql = "SELECT * FROM films_likes WHERE film_id = ?";
+        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
+        if (!filmRows.next()) {
+            return 0;
+        } else {
+            return jdbcTemplate.queryForObject(sql, Integer.class, filmId);
+        }
     }
 }

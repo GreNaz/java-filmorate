@@ -148,7 +148,7 @@ public class FilmDbStorage implements FilmStorage {
                         ps.setLong(1, film.getId());
                         ps.setInt(2, director.getId());
                     });
-            film.getDirectors().clear();
+            //film.getDirectors().clear();
         } else film.setDirectors(new LinkedHashSet<>());
     }
 

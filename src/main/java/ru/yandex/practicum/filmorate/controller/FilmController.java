@@ -62,4 +62,10 @@ public class FilmController {
         log.info("Received a request to remove like from film with id: {}", filmId);
         return filmService.removeLike(filmId, userId);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
+        log.info("Received a request to get list of {} popular films", directorId);
+        return filmService.getFilmsByDirector(directorId, sortBy);
+    }
 }

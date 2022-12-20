@@ -2,20 +2,23 @@ package ru.yandex.practicum.filmorate.storage.director.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
-import java.sql.PreparedStatement;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -24,18 +27,23 @@ public class DirectorDbStorage implements DirectorStorage {
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
 
     @Override
-    public Director create(Director director) {
-        String sql = "INSERT INTO director (director_id, name) " +
-                "VALUES ( ?, ?)";
+    public Optional<Director> create(Director director) {
+/*        String sql = "INSERT INTO director " +
+                "VALUES (?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"director_id"});
+            PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             stmt.setString(1, director.getName());
             return stmt;
         }, keyHolder);
-        director.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
+        director.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());*/
 
-        return director;
+        SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("director")
+                .usingGeneratedKeyColumns("director_id");
+        String key = simpleJdbcInsert.executeAndReturnKey(director.toMap()).toString();
+
+        return get(Integer.parseInt(key));
     }
 
     @Override
@@ -73,5 +81,33 @@ public class DirectorDbStorage implements DirectorStorage {
         }
         Director director = jdbcTemplate.queryForObject(sql, Mapper::directorMapper, id);
         return Optional.ofNullable(director);
+    }
+
+    @Override
+    public void loadDirectors(List<Film> films) {
+
+        String sqlDirectors = "SELECT film_id, d2.* " +
+                "FROM film_director " +
+                "JOIN director d2 ON d2.director_id = film_director.director_id " +
+                "WHERE film_id IN (:filmsId)";
+
+        List<Long> filmsId = films.stream()
+                .map(Film::getId)
+                .collect(Collectors.toList());
+
+        Map<Long, Film> filmMap = films.stream()
+                .collect(Collectors.toMap(Film::getId, film -> film, (a, b) -> b));
+
+        SqlParameterSource parameters = new MapSqlParameterSource("filmsId", filmsId);
+
+        SqlRowSet sqlRowSet = namedJdbcTemplate.queryForRowSet(sqlDirectors, parameters);
+
+        while (sqlRowSet.next()) {
+            Long filmId = sqlRowSet.getLong("film_id");
+            int directorId = sqlRowSet.getInt("director_id");
+            String name = sqlRowSet.getString("name");
+
+            filmMap.get(filmId).getDirectors().add(new Director(directorId, name));
+        }
     }
 }
