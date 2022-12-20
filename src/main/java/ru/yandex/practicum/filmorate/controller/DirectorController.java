@@ -19,13 +19,13 @@ public class DirectorController {
 
     @PostMapping
     public Optional<Director> creteDirectors(@Valid @RequestBody Director director) {
-        log.info("Received a request to get directors");
+        log.info("Received a request to crete directors");
         return directorService.createDirector(director);
     }
 
     @PutMapping
     public Director updateDirectors(@Valid @RequestBody Director director) {
-        log.info("Received a request to get directors");
+        log.info("Received a request to update directors");
         return directorService.updateDirector(director);
     }
 
@@ -43,7 +43,7 @@ public class DirectorController {
 
     @DeleteMapping("/{id}")
     public void deleteDirector(@PathVariable int id) {
-        log.info("Received a request to get director with id = " + id);
+        log.info("Received a request to delete director with id = " + id);
         directorService.deleteDirector(id);
     }
 }

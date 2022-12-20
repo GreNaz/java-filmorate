@@ -30,48 +30,21 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final DirectorStorage directorStorage;
 
-    public List<Film> getFilmsByDirector(int id, String sortType) {
+    public List<Film> getFilmsByDirectorWithSort(int id, String sortType) {
         log.info("Getting films By Director");
         List<Film> films = filmStorage.getFilms();
         genreStorage.loadGenres(films);
         directorStorage.loadDirectors(films);
-        Director director = directorStorage.get(id).get();
+        Director director = directorStorage.get(id).orElseThrow();
         if (sortType.equals("year")){
-            List<Film> filmsByDirectorSortedByYear = films.stream()
-                    .filter(f -> f.getDirectors().contains(director))
+            return getFilmsByDirector(films, director).stream()
                     .sorted(Comparator.comparing(Film::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder())))
                     .collect(Collectors.toList());
-            return filmsByDirectorSortedByYear;
         } else if (sortType.equals("likes")){
-            List<Film> filmsByDirector = films.stream()
-                    .filter(f -> f.getDirectors().contains(director))
-                    .collect(Collectors.toList());
-            Map<Long, Integer> filmsAndLikes = new HashMap<>();
-            for (Film film: filmsByDirector) {
-                filmsAndLikes.put(film.getId(), likeStorage.getLikesNumber(film.getId()));
-            }
-            if (filmsAndLikes.size() < 2){
-                return filmsByDirector;
-            } else {
-                Map<Long, Integer> filmsAndLikesSorted = filmsAndLikes.entrySet()
-                        .stream()
-                        .sorted(Map.Entry.comparingByValue())
-                        .collect(Collectors.toMap(
-                                Map.Entry::getKey,
-                                Map.Entry::getValue,
-                                (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-                List<Film> filmsByDirectorSortedByLikes = new ArrayList<>();
-                for (Long filmId : filmsAndLikesSorted.keySet()) {
-                    filmsByDirectorSortedByLikes.add(filmStorage.get(filmId).get());
-                }
-                genreStorage.loadGenres(filmsByDirectorSortedByLikes);
-                directorStorage.loadDirectors(filmsByDirectorSortedByLikes);
-                return filmsByDirectorSortedByLikes;
-            }
+            List<Film> filmsByDirector = getFilmsByDirector(films, director);
+                return sortFilmsByLikes(filmsByDirector);
         } else {
-            return films.stream()
-                    .filter((p) -> p.getDirectors() != null)
-                    .collect(Collectors.toList());
+            return getFilmsByDirector(films, director);
         }
     }
 
@@ -125,5 +98,36 @@ public class FilmService {
         List<Film> films = filmStorage.getPopular(count);
         genreStorage.loadGenres(films);
         return films;
+    }
+
+    private List<Film> getFilmsByDirector(List<Film> films, Director director){
+        return films.stream()
+                .filter(f -> f.getDirectors().contains(director))
+                .collect(Collectors.toList());
+    }
+
+    private List<Film> sortFilmsByLikes (List<Film> films) {
+        Map<Long, Integer> filmsAndLikes = new HashMap<>();
+        for (Film film : films) {
+            filmsAndLikes.put(film.getId(), likeStorage.getLikesNumber(film.getId()));
+        }
+        if (filmsAndLikes.size() < 2) {
+            return films;
+        } else {
+            Map<Long, Integer> filmsAndLikesSorted = filmsAndLikes.entrySet()
+                    .stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .collect(Collectors.toMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue,
+                            (oldValue, newValue) -> oldValue, LinkedHashMap::new));
+            List<Film> filmsByDirectorSortedByLikes = new ArrayList<>();
+            for (Long filmId : filmsAndLikesSorted.keySet()) {
+                filmsByDirectorSortedByLikes.add(filmStorage.get(filmId).get());
+            }
+            genreStorage.loadGenres(filmsByDirectorSortedByLikes);
+            directorStorage.loadDirectors(filmsByDirectorSortedByLikes);
+            return filmsByDirectorSortedByLikes;
+        }
     }
 }

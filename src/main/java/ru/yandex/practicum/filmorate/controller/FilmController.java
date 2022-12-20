@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.ValidationException;
 import javax.validation.constraints.Positive;
-import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -66,6 +64,6 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
         log.info("Received a request to get list of {} popular films", directorId);
-        return filmService.getFilmsByDirector(directorId, sortBy);
+        return filmService.getFilmsByDirectorWithSort(directorId, sortBy);
     }
 }

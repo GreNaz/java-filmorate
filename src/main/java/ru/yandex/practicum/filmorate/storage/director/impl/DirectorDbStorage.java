@@ -11,7 +11,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
@@ -28,21 +27,10 @@ public class DirectorDbStorage implements DirectorStorage {
 
     @Override
     public Optional<Director> create(Director director) {
-/*        String sql = "INSERT INTO director " +
-                "VALUES (?)";
-        KeyHolder keyHolder = new GeneratedKeyHolder();
-        jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, director.getName());
-            return stmt;
-        }, keyHolder);
-        director.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());*/
-
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
                 .withTableName("director")
                 .usingGeneratedKeyColumns("director_id");
         String key = simpleJdbcInsert.executeAndReturnKey(director.toMap()).toString();
-
         return get(Integer.parseInt(key));
     }
 
