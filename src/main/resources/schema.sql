@@ -1,3 +1,9 @@
+CREATE TABLE IF NOT EXISTS director
+(
+    director_id int PRIMARY KEY,
+    name     varchar(20) not null
+);
+
 CREATE TABLE IF NOT EXISTS genre
 (
     genre_id int PRIMARY KEY,
@@ -72,4 +78,17 @@ CREATE TABLE IF NOT EXISTS film_genre
     constraint fk_genre_id
         foreign key (genre_id)
             references genre (genre_id)
+);
+
+CREATE TABLE IF NOT EXISTS film_director
+(
+    film_id  BIGINT not null,
+    director_id int    not null,
+    PRIMARY KEY (director_id, film_id),
+    constraint fk_film_id
+        foreign key (film_id)
+            references films (film_id),
+    constraint fk_director_id
+        foreign key (director_id)
+            references director (director_id)
 );
