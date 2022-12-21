@@ -7,8 +7,6 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 
-import java.util.Optional;
-
 @Repository
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {
@@ -39,7 +37,7 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public Integer getLikesNumber(Long filmId) {
-        String sql = "SELECT * FROM films_likes WHERE film_id = ?";
+        String sql = "SELECT COUNT(*) FROM films_likes WHERE film_id = ?";
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
         if (!filmRows.next()) {
             return 0;

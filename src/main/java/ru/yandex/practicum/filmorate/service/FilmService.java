@@ -41,22 +41,37 @@ public class FilmService {
                     .sorted(Comparator.comparing(Film::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder())))
                     .collect(Collectors.toList());
         } else if (sortType.equals("likes")){
-            List<Film> filmsByDirector = getFilmsByDirector(films, director);
-                return sortFilmsByLikes(filmsByDirector);
+            return getFilmsByDirector(films, director).stream()
+                    .sorted(Comparator.comparing(Film::getRate, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
         } else {
             return getFilmsByDirector(films, director);
         }
     }
 
+    private List<Film> getFilmsByDirector(List<Film> films, Director director){
+        return films.stream()
+                .filter(f -> f.getDirectors().contains(director))
+                .collect(Collectors.toList());
+    }
+
     public Film createLike(Long filmId, Long userId) {
         log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.createLike(filmId, userId);
+        updateFilmRate(filmId);
         return get(filmId);
+    }
+
+    private void updateFilmRate(Long filmId) {
+        Film updatedFilm = filmStorage.get(filmId).orElseThrow();
+        updatedFilm.setRate(likeStorage.getLikesNumber(filmId));
+        update(updatedFilm);
     }
 
     public Film removeLike(Long filmId, Long userId) {
         log.info("Removing a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.removeLike(filmId, userId);
+        updateFilmRate(filmId);
         return get(filmId);
     }
 
@@ -98,36 +113,5 @@ public class FilmService {
         List<Film> films = filmStorage.getPopular(count);
         genreStorage.loadGenres(films);
         return films;
-    }
-
-    private List<Film> getFilmsByDirector(List<Film> films, Director director){
-        return films.stream()
-                .filter(f -> f.getDirectors().contains(director))
-                .collect(Collectors.toList());
-    }
-
-    private List<Film> sortFilmsByLikes (List<Film> films) {
-        Map<Long, Integer> filmsAndLikes = new HashMap<>();
-        for (Film film : films) {
-            filmsAndLikes.put(film.getId(), likeStorage.getLikesNumber(film.getId()));
-        }
-        if (filmsAndLikes.size() < 2) {
-            return films;
-        } else {
-            Map<Long, Integer> filmsAndLikesSorted = filmsAndLikes.entrySet()
-                    .stream()
-                    .sorted(Map.Entry.comparingByValue())
-                    .collect(Collectors.toMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue,
-                            (oldValue, newValue) -> oldValue, LinkedHashMap::new));
-            List<Film> filmsByDirectorSortedByLikes = new ArrayList<>();
-            for (Long filmId : filmsAndLikesSorted.keySet()) {
-                filmsByDirectorSortedByLikes.add(filmStorage.get(filmId).get());
-            }
-            genreStorage.loadGenres(filmsByDirectorSortedByLikes);
-            directorStorage.loadDirectors(filmsByDirectorSortedByLikes);
-            return filmsByDirectorSortedByLikes;
-        }
     }
 }

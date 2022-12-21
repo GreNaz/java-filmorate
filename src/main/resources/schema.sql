@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS films
     description  varchar(200) not null,
     release_date date         not null,
     duration     int          not null,
+    rate         int,
     mpa_id       int          not null,
     CONSTRAINT fk_mpa_id
         FOREIGN KEY (mpa_id)

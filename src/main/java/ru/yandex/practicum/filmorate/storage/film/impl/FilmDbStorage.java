@@ -106,7 +106,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
 
-        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, m.mpa_id, m.name " +
+        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, rate, m.mpa_id, m.name " +
                 "FROM films " +
                 "LEFT JOIN films_likes fl ON films.FILM_ID = fl.film_id " +
                 "LEFT JOIN mpa m on m.MPA_ID = films.mpa_id " +
@@ -119,7 +119,6 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
-
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
@@ -148,7 +147,6 @@ public class FilmDbStorage implements FilmStorage {
                         ps.setLong(1, film.getId());
                         ps.setInt(2, director.getId());
                     });
-            //film.getDirectors().clear();
         } else film.setDirectors(new LinkedHashSet<>());
     }
 
