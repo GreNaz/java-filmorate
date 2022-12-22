@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
@@ -89,7 +89,7 @@ public class FilmControllerTest {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof AlreadyExistException))
                 .andExpect(result -> assertEquals("NOT FOUND FILM: Film(id=7, name=Film, description=good film, releaseDate=2020-05-05, duration=120, rate=1, mpa=Mpa(id=1, name=G), genres=[], directors=[])",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
@@ -115,7 +115,7 @@ public class FilmControllerTest {
                         get("/films/18")
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof AlreadyExistException))
                 .andExpect(result -> assertEquals("Film id = 18 was not found",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
@@ -156,7 +156,7 @@ public class FilmControllerTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof ObjectNotFoundException))
-                .andExpect(result -> assertEquals("NOT FOUND FILM OR USER",
+                .andExpect(result -> assertEquals("Not found film or user",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
 
     }

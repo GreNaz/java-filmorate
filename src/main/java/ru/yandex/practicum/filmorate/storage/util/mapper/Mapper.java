@@ -42,11 +42,22 @@ public class Mapper {
     }
 
     public static User userMapper(ResultSet resultSet, int row) throws SQLException {
-        int id = resultSet.getInt("user_id");
+        long id = resultSet.getLong("user_id");
         String email = resultSet.getString("email");
         String login = resultSet.getString("login");
         String name = resultSet.getString("name");
         LocalDate birthday = resultSet.getDate("birthday").toLocalDate();
         return new User(id, email, login, name, birthday);
+    }
+
+    public static Review reviewMapper(ResultSet resultSet, int row) throws SQLException {
+        long reviewId = resultSet.getLong("review_id");
+        String content = resultSet.getString("content");
+        boolean isPositive = resultSet.getBoolean("is_positive");
+        long userId = resultSet.getLong("user_id");
+        long filmId = resultSet.getLong("film_id");
+        int useful = resultSet.getInt("useful");
+
+        return new Review(reviewId, content, isPositive, userId, filmId, useful);
     }
 }

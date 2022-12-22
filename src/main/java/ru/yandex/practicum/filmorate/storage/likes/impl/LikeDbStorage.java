@@ -21,17 +21,17 @@ public class LikeDbStorage implements LikeStorage {
         int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
 
         if (resultUpdate == 0) {
-            throw new ObjectNotFoundException("NOT FOUND FILM OR USER");
+            throw new ObjectNotFoundException("Not found film or user");
         }
     }
 
     @Override
     public void createLike(Long filmId, Long userId) {
-        String sql = "INSERT INTO films_likes (film_id, user_id) VALUES (?, ?)";
+        String sql = "INSERT INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
 
         int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
         if (resultUpdate == 0) {
-            throw new ObjectNotFoundException("NOT FOUND FILM OR USER");
+            throw new ObjectNotFoundException("not found film or user");
         }
     }
 
