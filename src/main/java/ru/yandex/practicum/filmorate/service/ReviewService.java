@@ -43,8 +43,9 @@ public class ReviewService {
     public Review update(Review review) {
         log.info("Updating a review {}", review);
         reviewStorage.update(review);
-        Optional<Review> result = reviewStorage.get(review.getReviewId());
-        Event event = new Event(result.get().getUserId(), EventType.REVIEW, EventOperation.UPDATE, review.getReviewId());
+        Review result = reviewStorage.get(review.getReviewId()).orElseThrow(
+                () -> new ObjectNotFoundException("The review  was not found."));
+        Event event = new Event(result.getUserId(), EventType.REVIEW, EventOperation.UPDATE, review.getReviewId());
         log.info("Updated a 'Review'.");
         eventStorage.addEvent(event);
         return get(review.getReviewId());
