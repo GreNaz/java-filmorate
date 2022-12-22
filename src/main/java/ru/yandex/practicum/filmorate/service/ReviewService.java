@@ -4,24 +4,34 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.review.ReviewStorage;
 
 import javax.validation.ValidationException;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
     private final ReviewStorage reviewStorage;
+    private final EventStorage eventStorage;
 
     private static final boolean LIKE = true;
     private static final boolean DISLIKE = false;
 
     public Review create(Review review) {
         log.info("Create a {} ", review);
-        return reviewStorage.create(review);
+        Review reviewNew = reviewStorage.create(review);
+        Event event = new Event(review.getUserId(), EventType.REVIEW, EventOperation.ADD, reviewNew.getReviewId());
+        log.info("Added a 'Review'.");
+        eventStorage.addEvent(event);
+        return reviewNew;
     }
 
     public Review get(Long id) {
@@ -33,11 +43,19 @@ public class ReviewService {
     public Review update(Review review) {
         log.info("Updating a review {}", review);
         reviewStorage.update(review);
+        Optional<Review> result = reviewStorage.get(review.getReviewId());
+        Event event = new Event(result.get().getUserId(), EventType.REVIEW, EventOperation.UPDATE, review.getReviewId());
+        log.info("Updated a 'Review'.");
+        eventStorage.addEvent(event);
         return get(review.getReviewId());
     }
 
     public void removeReview(Long id) {
+        Review review = get(id);
         log.info("Removing a review with an id = {}", id);
+        Event event = new Event(review.getUserId(), EventType.REVIEW, EventOperation.REMOVE, id);
+        log.info("'Review' removed.");
+        eventStorage.addEvent(event);
         reviewStorage.removeReview(id);
     }
 

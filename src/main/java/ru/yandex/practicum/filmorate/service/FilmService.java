@@ -4,9 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
@@ -57,10 +54,14 @@ public class FilmService {
                 .filter(f -> f.getDirectors().contains(director))
                 .collect(Collectors.toList());
     }
+    private final EventStorage eventStorage;
 
     public Film createLike(Long filmId, Long userId) {
         log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.createLike(filmId, userId);
+        Event event = new Event(userId, EventType.LIKE, EventOperation.ADD, filmId);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Like' event.");
         updateFilmRate(filmId);
         return get(filmId);
     }
@@ -76,6 +77,9 @@ public class FilmService {
     public Film removeLike(Long filmId, Long userId) {
         log.info("Removing a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.removeLike(filmId, userId);
+        Event event = new Event(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Delete Like' event.");
         updateFilmRate(filmId);
         return get(filmId);
     }
