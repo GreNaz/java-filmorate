@@ -4,6 +4,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;

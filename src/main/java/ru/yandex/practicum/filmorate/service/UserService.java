@@ -92,6 +92,8 @@ public class UserService {
     public void deleteById(Long id) {
         userStorage.deleteById(id);
         log.info("User with id {} was deleted ", id);
+    }
+
     public List<Event> getEvents(Long id) {
 
         if (userStorage.get(id).isPresent()) {
