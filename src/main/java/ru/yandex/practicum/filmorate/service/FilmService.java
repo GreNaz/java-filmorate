@@ -37,11 +37,11 @@ public class FilmService {
         genreStorage.loadGenres(films);
         directorStorage.loadDirectors(films);
         Director director = directorStorage.get(id).orElseThrow();
-        if (sortType.equals("year")){
+        if (sortType.equals("year")) {
             return getFilmsByDirector(films, director).stream()
                     .sorted(Comparator.comparing(Film::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder())))
                     .collect(Collectors.toList());
-        } else if (sortType.equals("likes")){
+        } else if (sortType.equals("likes")) {
             return getFilmsByDirector(films, director).stream()
                     .sorted(Comparator.comparing(Film::getRate, Comparator.nullsLast(Comparator.naturalOrder())))
                     .collect(Collectors.toList());
@@ -50,7 +50,7 @@ public class FilmService {
         }
     }
 
-    private List<Film> getFilmsByDirector(List<Film> films, Director director){
+    private List<Film> getFilmsByDirector(List<Film> films, Director director) {
         return films.stream()
                 .filter(f -> f.getDirectors().contains(director))
                 .collect(Collectors.toList());
@@ -116,5 +116,10 @@ public class FilmService {
         List<Film> films = filmStorage.getPopular(count);
         genreStorage.loadGenres(films);
         return films;
+    }
+
+    public void deleteById(Long id) {
+        filmStorage.deleteById(id);
+        log.info("Film with id {} was deleted", id);
     }
 }

@@ -66,4 +66,10 @@ public class FilmController {
         log.info("Received a request to get list of {} popular films", directorId);
         return filmService.getFilmsByDirectorWithSort(directorId, sortBy);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable Long id) {
+        filmService.deleteById(id);
+        log.info("Был удален фильм с id {}", id);
+    }
 }
