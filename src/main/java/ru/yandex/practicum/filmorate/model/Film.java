@@ -3,10 +3,7 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 import ru.yandex.practicum.filmorate.model.annotation.ReleaseDate;
 
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 
@@ -35,8 +32,13 @@ public class Film {
     @Min(value = 1, message = "Received negative or equal to 0 movie duration")
     private int duration;
 
+    @Positive
+    private Integer rate;
+
     @NotNull
     private Mpa mpa;
 
     private LinkedHashSet<Genre> genres;
+
+    private LinkedHashSet<Director> directors;
 }

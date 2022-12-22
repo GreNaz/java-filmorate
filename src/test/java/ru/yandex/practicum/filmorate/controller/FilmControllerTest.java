@@ -90,7 +90,7 @@ public class FilmControllerTest {
                 )
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof FilmAlreadyExistException))
-                .andExpect(result -> assertEquals("NOT FOUND FILM: Film(id=7, name=Film, description=good film, releaseDate=2020-05-05, duration=120, mpa=Mpa(id=1, name=G), genres=[])",
+                .andExpect(result -> assertEquals("NOT FOUND FILM: Film(id=7, name=Film, description=good film, releaseDate=2020-05-05, duration=120, rate=1, mpa=Mpa(id=1, name=G), genres=[], directors=[])",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
     }
 
@@ -145,7 +145,7 @@ public class FilmControllerTest {
                         put("/films/29/like/2")
                 )
                 .andExpect(status().isNotFound())
-                .andExpect(result -> assertTrue(result.getResolvedException() instanceof NoSuchElementException));
+                .andExpect(result -> assertTrue(result.getResolvedException() instanceof DataAccessException));
     }
 
     @Test
