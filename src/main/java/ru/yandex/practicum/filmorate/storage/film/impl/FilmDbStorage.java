@@ -68,7 +68,6 @@ public class FilmDbStorage implements FilmStorage {
         if (resultUpdate == 0) {
             throw new FilmAlreadyExistException("NOT FOUND FILM: " + film);
         }
-
         return film;
     }
 
@@ -77,9 +76,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
-
         return jdbcTemplate.query(sql, Mapper::filmMapper);
-
     }
 
     @Override
@@ -88,9 +85,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE films.film_id = ?";
-
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-
         if (!filmRows.next()) {
             return Optional.empty();
         }

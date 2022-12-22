@@ -64,8 +64,10 @@ public class FilmService {
 
     private void updateFilmRate(Long filmId) {
         Film updatedFilm = filmStorage.get(filmId).orElseThrow();
+        genreStorage.loadGenres(Collections.singletonList(updatedFilm));
         updatedFilm.setRate(likeStorage.getLikesNumber(filmId));
         update(updatedFilm);
+        System.out.println(updatedFilm);
     }
 
     public Film removeLike(Long filmId, Long userId) {
@@ -103,8 +105,12 @@ public class FilmService {
         log.info("Getting film id = {}", id);
         Film film = filmStorage.get(id).orElseThrow(
                 () -> new FilmAlreadyExistException("Film id = " + id + " was not found"));
+        log.info("передача фильма как списка", Collections.singletonList(film));
+        System.out.println(Collections.singletonList(film));
         genreStorage.loadGenres(Collections.singletonList(film));
         directorStorage.loadDirectors(Collections.singletonList(film));
+        log.info("передача фильма как списка", Collections.singletonList(film));
+        System.out.println(film);
         return film;
     }
 
