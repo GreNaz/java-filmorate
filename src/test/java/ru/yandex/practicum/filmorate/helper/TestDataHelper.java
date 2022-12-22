@@ -11,14 +11,13 @@ public class TestDataHelper {
             "Film",
             "good film",
             LocalDate.of(2020, 5, 5), 120,
-            1,
             new Mpa(1, "G"),
-            null, null);
+            null);
     public static Film FILM_2 = new Film(2,
             "2 Film",
             "good film 2",
-            LocalDate.of(2019, 5, 5), 111, 1,
-            new Mpa(2, "PG"), null, null);
+            LocalDate.of(2019, 5, 5), 111,
+            new Mpa(2, "PG"), null);
     public static User USER = new User(1,
             "test@test.com",
             "login",

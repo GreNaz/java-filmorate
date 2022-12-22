@@ -7,14 +7,13 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.SQLType;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -45,8 +44,6 @@ public class FilmDbStorage implements FilmStorage {
 
         addGenres(film);
 
-        addDirectors(film);
-
         return film;
     }
 
@@ -59,16 +56,14 @@ public class FilmDbStorage implements FilmStorage {
         deleteGenres(film);
         addGenres(film);
 
-        deleteDirectors(film);
-        addDirectors(film);
-
         int resultUpdate = jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
 
         if (resultUpdate == 0) {
-            throw new AlreadyExistException("NOT FOUND FILM: " + film);
+            throw new FilmAlreadyExistException("NOT FOUND FILM: " + film);
         }
+
         return film;
     }
 
@@ -77,17 +72,20 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
+
         return jdbcTemplate.query(sql, Mapper::filmMapper);
+
     }
 
     @Override
     public Optional<Film> get(Long id) {
-
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE films.film_id = ?";
+
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
+
         if (!filmRows.next()) {
             return Optional.empty();
         }
@@ -103,7 +101,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
 
-        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, rate, m.mpa_id, m.name " +
+        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, m.mpa_id, m.name " +
                 "FROM films " +
                 "LEFT JOIN films_likes fl ON films.FILM_ID = fl.film_id " +
                 "LEFT JOIN mpa m on m.MPA_ID = films.mpa_id " +
@@ -117,25 +115,6 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
 
-    @Override
-    public void deleteById(Long id) {
-        final String findFilm = "DELETE FROM films WHERE film_id = ?";
-        jdbcTemplate.update(findFilm, id);
-    }
-
-    @Override
-    public List<Film> commonFilms(Long userId, Long friendId) {
-
-        String sql = "SELECT f2.*, M.*\n" +
-                "FROM FILMS_LIKES\n" +
-                "join FILMS_LIKES f ON f.FILM_ID = FILMS_LIKES.FILM_ID\n" +
-                "LEFT JOIN films f2 on f2.film_id = f.film_id\n" +
-                "join MPA M on f2.mpa_id = M.MPA_ID\n" +
-                "WHERE f.USER_ID = ?\n" +
-                "AND FILMS_LIKES.USER_ID = ?" +
-                "ORDER BY RATE;";
-        return jdbcTemplate.query(sql, Mapper::filmMapper, userId, friendId);
-    }
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
@@ -153,23 +132,6 @@ public class FilmDbStorage implements FilmStorage {
     private void deleteGenres(Film film) {
         String deleteGenres = "DELETE FROM film_genre WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
-    }
-
-    private void addDirectors(Film film) {
-        if (film.getDirectors() != null) {
-            String updateDirectors = "MERGE INTO film_director (film_id, director_id) VALUES (?, ?)";
-            jdbcTemplate.batchUpdate(
-                    updateDirectors, film.getDirectors(), film.getDirectors().size(),
-                    (ps, director) -> {
-                        ps.setLong(1, film.getId());
-                        ps.setInt(2, director.getId());
-                    });
-        } else film.setDirectors(new LinkedHashSet<>());
-    }
-
-    private void deleteDirectors(Film film) {
-        String deleteDirectors = "DELETE FROM film_director WHERE film_id = ?";
-        jdbcTemplate.update(deleteDirectors, film.getId());
     }
 
 }

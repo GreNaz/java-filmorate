@@ -69,7 +69,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleFilmAlreadyExistException(final AlreadyExistException e) {
+    public ErrorResponse handleFilmAlreadyExistException(final FilmAlreadyExistException e) {
         log.error("Error : {}", e.getMessage());
         return new ErrorResponse(
                 e.getMessage()
