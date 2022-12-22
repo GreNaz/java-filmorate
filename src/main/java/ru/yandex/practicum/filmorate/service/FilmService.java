@@ -4,14 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Responsible for operations with films, - adding and removing likes,
@@ -26,16 +28,52 @@ public class FilmService {
     private final GenreStorage genreStorage;
     private final MpaStorage mpaStorage;
     private final LikeStorage likeStorage;
+    private final DirectorStorage directorStorage;
+
+    public List<Film> getFilmsByDirectorWithSort(int id, String sortType) {
+        log.info("Getting films By Director");
+        List<Film> films = filmStorage.getFilms();
+        genreStorage.loadGenres(films);
+        directorStorage.loadDirectors(films);
+        Director director = directorStorage.get(id).orElseThrow();
+        if (sortType.equals("year")){
+            return getFilmsByDirector(films, director).stream()
+                    .sorted(Comparator.comparing(Film::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+        } else if (sortType.equals("likes")){
+            return getFilmsByDirector(films, director).stream()
+                    .sorted(Comparator.comparing(Film::getRate, Comparator.nullsLast(Comparator.naturalOrder())))
+                    .collect(Collectors.toList());
+        } else {
+            return getFilmsByDirector(films, director);
+        }
+    }
+
+    private List<Film> getFilmsByDirector(List<Film> films, Director director){
+        return films.stream()
+                .filter(f -> f.getDirectors().contains(director))
+                .collect(Collectors.toList());
+    }
 
     public Film createLike(Long filmId, Long userId) {
         log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.createLike(filmId, userId);
+        updateFilmRate(filmId);
         return get(filmId);
+    }
+
+    private void updateFilmRate(Long filmId) {
+        Film updatedFilm = filmStorage.get(filmId).orElseThrow();
+        genreStorage.loadGenres(Collections.singletonList(updatedFilm));
+        updatedFilm.setRate(likeStorage.getLikesNumber(filmId));
+        update(updatedFilm);
+        System.out.println(updatedFilm);
     }
 
     public Film removeLike(Long filmId, Long userId) {
         log.info("Removing a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.removeLike(filmId, userId);
+        updateFilmRate(filmId);
         return get(filmId);
     }
 
@@ -59,6 +97,7 @@ public class FilmService {
         log.info("Getting films");
         List<Film> films = filmStorage.getFilms();
         genreStorage.loadGenres(films);
+        directorStorage.loadDirectors(films);
         return films;
     }
 
@@ -67,6 +106,7 @@ public class FilmService {
         Film film = filmStorage.get(id).orElseThrow(
                 () -> new FilmAlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.loadGenres(Collections.singletonList(film));
+        directorStorage.loadDirectors(Collections.singletonList(film));
         return film;
     }
 

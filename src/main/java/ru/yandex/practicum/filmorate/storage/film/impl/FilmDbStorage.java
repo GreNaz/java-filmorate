@@ -44,6 +44,8 @@ public class FilmDbStorage implements FilmStorage {
 
         addGenres(film);
 
+        addDirectors(film);
+
         return film;
     }
 
@@ -56,6 +58,9 @@ public class FilmDbStorage implements FilmStorage {
         deleteGenres(film);
         addGenres(film);
 
+        deleteDirectors(film);
+        addDirectors(film);
+
         int resultUpdate = jdbcTemplate.update(sql,
                 film.getName(), film.getDescription(), film.getReleaseDate(),
                 film.getDuration(), film.getMpa().getId(), film.getId());
@@ -63,7 +68,6 @@ public class FilmDbStorage implements FilmStorage {
         if (resultUpdate == 0) {
             throw new FilmAlreadyExistException("NOT FOUND FILM: " + film);
         }
-
         return film;
     }
 
@@ -72,9 +76,7 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
-
         return jdbcTemplate.query(sql, Mapper::filmMapper);
-
     }
 
     @Override
@@ -83,9 +85,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE films.film_id = ?";
-
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
-
         if (!filmRows.next()) {
             return Optional.empty();
         }
@@ -101,7 +101,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
 
-        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, m.mpa_id, m.name " +
+        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, rate, m.mpa_id, m.name " +
                 "FROM films " +
                 "LEFT JOIN films_likes fl ON films.FILM_ID = fl.film_id " +
                 "LEFT JOIN mpa m on m.MPA_ID = films.mpa_id " +
@@ -114,7 +114,6 @@ public class FilmDbStorage implements FilmStorage {
 
         return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
-
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
@@ -132,6 +131,23 @@ public class FilmDbStorage implements FilmStorage {
     private void deleteGenres(Film film) {
         String deleteGenres = "DELETE FROM film_genre WHERE film_id = ?";
         jdbcTemplate.update(deleteGenres, film.getId());
+    }
+
+    private void addDirectors(Film film) {
+        if (film.getDirectors() != null) {
+            String updateDirectors = "MERGE INTO film_director (film_id, director_id) VALUES (?, ?)";
+            jdbcTemplate.batchUpdate(
+                    updateDirectors, film.getDirectors(), film.getDirectors().size(),
+                    (ps, director) -> {
+                        ps.setLong(1, film.getId());
+                        ps.setInt(2, director.getId());
+                    });
+        } else film.setDirectors(new LinkedHashSet<>());
+    }
+
+    private void deleteDirectors(Film film) {
+        String deleteDirectors = "DELETE FROM film_director WHERE film_id = ?";
+        jdbcTemplate.update(deleteDirectors, film.getId());
     }
 
 }
