@@ -3,7 +3,8 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.FilmAlreadyExistException;
+
+import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
@@ -104,7 +105,7 @@ public class FilmService {
     public Film get(Long id) {
         log.info("Getting film id = {}", id);
         Film film = filmStorage.get(id).orElseThrow(
-                () -> new FilmAlreadyExistException("Film id = " + id + " was not found"));
+                () -> new AlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.loadGenres(Collections.singletonList(film));
         directorStorage.loadDirectors(Collections.singletonList(film));
         return film;
