@@ -115,6 +115,13 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
 
+    @Override
+    public void deleteById(Long id) {
+        final String findFilm = "DELETE FROM films WHERE film_id = ?";
+        jdbcTemplate.update(findFilm, id);
+    }
+
+
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
             String updateGenres = "MERGE INTO film_genre (film_id, genre_id) VALUES (?, ?)";

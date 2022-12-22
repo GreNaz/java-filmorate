@@ -158,7 +158,6 @@ public class FilmControllerTest {
                 .andExpect(result -> assertTrue(result.getResolvedException() instanceof ObjectNotFoundException))
                 .andExpect(result -> assertEquals("Not found film or user",
                         Objects.requireNonNull(result.getResolvedException()).getMessage()));
-
     }
 
     @Test

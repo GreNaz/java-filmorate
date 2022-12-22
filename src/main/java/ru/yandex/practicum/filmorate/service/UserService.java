@@ -42,6 +42,7 @@ public class UserService {
     }
 
     public List<User> getFriends(Long id) {
+        get(id);
         log.info("List of friends of the user with id = {}", id);
         return friendStorage.getFriends(id);
     }
@@ -74,5 +75,10 @@ public class UserService {
             user.setName(user.getLogin());
             log.info("Username equated to login: " + "name = " + user.getLogin());
         }
+    }
+
+    public void deleteById(Long id) {
+        userStorage.deleteById(id);
+        log.info("User with id {} was deleted ", id);
     }
 }
