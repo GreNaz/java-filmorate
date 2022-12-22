@@ -105,12 +105,8 @@ public class FilmService {
         log.info("Getting film id = {}", id);
         Film film = filmStorage.get(id).orElseThrow(
                 () -> new FilmAlreadyExistException("Film id = " + id + " was not found"));
-        log.info("передача фильма как списка", Collections.singletonList(film));
-        System.out.println(Collections.singletonList(film));
         genreStorage.loadGenres(Collections.singletonList(film));
         directorStorage.loadDirectors(Collections.singletonList(film));
-        log.info("передача фильма как списка", Collections.singletonList(film));
-        System.out.println(film);
         return film;
     }
 
