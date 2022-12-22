@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
+import javax.validation.ValidationException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,7 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final LikeStorage likeStorage;
     private final DirectorStorage directorStorage;
+    private final FriendStorage friendStorage;
 
     public List<Film> getFilmsByDirectorWithSort(int id, String sortType) {
         log.info("Getting films By Director");
@@ -121,5 +125,13 @@ public class FilmService {
     public void deleteById(Long id) {
         filmStorage.deleteById(id);
         log.info("Film with id {} was deleted", id);
+    }
+
+    public List<Film> commonFilms(Long userId, Long friendId) {
+        
+        log.info("List of common films");
+        List<Film> films = filmStorage.commonFilms(userId, friendId);
+        genreStorage.loadGenres(films);
+        return filmStorage.commonFilms(userId, friendId);
     }
 }
