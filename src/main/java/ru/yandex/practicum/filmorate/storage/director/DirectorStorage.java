@@ -14,4 +14,6 @@ public interface DirectorStorage {
     Optional<Director> get(int id);
 
     void loadDirectors(List<Film> films);
+
+    Optional<List<Director>> searchDirectors(String query);
 }

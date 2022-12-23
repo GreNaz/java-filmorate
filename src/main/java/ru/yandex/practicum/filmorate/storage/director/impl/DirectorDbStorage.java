@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.director.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -96,6 +97,18 @@ public class DirectorDbStorage implements DirectorStorage {
             String name = sqlRowSet.getString("name");
 
             filmMap.get(filmId).getDirectors().add(new Director(directorId, name));
+        }
+    }
+
+    @Override
+    public Optional<List<Director>> searchDirectors(String query) {
+        String sql = "SELECT * " +
+                "FROM DIRECTOR " +
+                "WHERE LCASE(name) LIKE ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.query(sql, Mapper::directorMapper, "%" + query.toLowerCase() + "%"));
+        } catch (DataAccessException dataAccessException) {
+            return Optional.empty();
         }
     }
 }
