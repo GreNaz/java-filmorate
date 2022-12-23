@@ -91,6 +91,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> get(Long id) {
+
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
@@ -131,6 +132,19 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(findFilm, id);
     }
 
+    @Override
+    public List<Film> commonFilms(Long userId, Long friendId) {
+
+        String sql = "SELECT f2.*, M.*\n" +
+                "FROM FILMS_LIKES\n" +
+                "join FILMS_LIKES f ON f.FILM_ID = FILMS_LIKES.FILM_ID\n" +
+                "LEFT JOIN films f2 on f2.film_id = f.film_id\n" +
+                "join MPA M on f2.mpa_id = M.MPA_ID\n" +
+                "WHERE f.USER_ID = ?\n" +
+                "AND FILMS_LIKES.USER_ID = ?" +
+                "ORDER BY RATE;";
+        return jdbcTemplate.query(sql, Mapper::filmMapper, userId, friendId);
+    }
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {

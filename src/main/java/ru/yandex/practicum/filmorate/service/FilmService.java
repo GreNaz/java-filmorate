@@ -5,14 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
-import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
+import javax.validation.ValidationException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,6 +32,7 @@ public class FilmService {
     private final MpaStorage mpaStorage;
     private final LikeStorage likeStorage;
     private final DirectorStorage directorStorage;
+    private final FriendStorage friendStorage;
 
     public List<Film> getFilmsByDirectorWithSort(int id, String sortType) {
         log.info("Getting films By Director");
@@ -55,6 +58,7 @@ public class FilmService {
                 .filter(f -> f.getDirectors().contains(director))
                 .collect(Collectors.toList());
     }
+    private final EventStorage eventStorage;
 
     public List<Film> searchFilmsByDirectorAndTitle(String query, String by) {
         List<Film> films = new ArrayList<>();
@@ -102,6 +106,9 @@ public class FilmService {
     public Film createLike(Long filmId, Long userId) {
         log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.createLike(filmId, userId);
+        Event event = new Event(userId, EventType.LIKE, EventOperation.ADD, filmId);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Like' event.");
         updateFilmRate(filmId);
         return get(filmId);
     }
@@ -118,6 +125,9 @@ public class FilmService {
     public Film removeLike(Long filmId, Long userId) {
         log.info("Removing a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.removeLike(filmId, userId);
+        Event event = new Event(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Delete Like' event.");
         updateFilmRate(filmId);
         return get(filmId);
     }
@@ -165,5 +175,13 @@ public class FilmService {
     public void deleteById(Long id) {
         filmStorage.deleteById(id);
         log.info("Film with id {} was deleted", id);
+    }
+
+    public List<Film> commonFilms(Long userId, Long friendId) {
+        
+        log.info("List of common films");
+        List<Film> films = filmStorage.commonFilms(userId, friendId);
+        genreStorage.loadGenres(films);
+        return filmStorage.commonFilms(userId, friendId);
     }
 }

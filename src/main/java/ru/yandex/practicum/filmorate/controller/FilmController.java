@@ -57,8 +57,15 @@ public class FilmController {
 
     @DeleteMapping("/{filmId}/like/{userId}")
     public Film removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
-        log.info("Received a request to remove like from film with id: {}", filmId);
+        log.info("Received a request to remove like from film with an id: {}", filmId);
         return filmService.removeLike(filmId, userId);
+    }
+
+    @GetMapping("/common")
+    public List<Film> commonFilms(@RequestParam Long userId,
+                                  @RequestParam Long friendId) {
+        log.info("Received a request to get common films between users with an id-s: {} and {}", userId, friendId);
+        return filmService.commonFilms(userId, friendId);
     }
 
     @GetMapping("/director/{directorId}")
