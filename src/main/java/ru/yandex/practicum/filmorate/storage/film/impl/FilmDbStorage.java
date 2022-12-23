@@ -14,11 +14,7 @@ import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.sql.SQLType;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 @RequiredArgsConstructor
@@ -78,6 +74,19 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
         return jdbcTemplate.query(sql, Mapper::filmMapper);
+    }
+
+    @Override
+    public Optional<List<Film>> searchFilmsByTitle(String query) {
+        String sql = "SELECT films.*, m.* " +
+                "FROM films " +
+                "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
+                "WHERE LCASE(films.name) LIKE ?";
+        try {
+            return Optional.ofNullable(jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%"));
+        } catch (DataAccessException dataAccessException) {
+            return Optional.empty();
+        }
     }
 
     @Override

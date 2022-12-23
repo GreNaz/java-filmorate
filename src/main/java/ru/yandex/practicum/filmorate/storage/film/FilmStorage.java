@@ -13,6 +13,8 @@ public interface FilmStorage {
 
     List<Film> getFilms();
 
+    Optional<List<Film>> searchFilmsByTitle(String query);
+
     Optional<Film> get(Long id);
 
     List<Film> getPopular(int count);

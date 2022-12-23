@@ -60,6 +60,49 @@ public class FilmService {
     }
     private final EventStorage eventStorage;
 
+    public List<Film> searchFilmsByDirectorAndTitle(String query, String by) {
+        List<Film> films = new ArrayList<>();
+        switch (by){
+            case "director":
+                log.info("Getting films by search in Directors");
+                films = searchFilmsByDirector(query);
+                break;
+            case "title":
+                log.info("Getting films by search in Titles");
+                films = searchFilmsByTitle(query);
+                break;
+            case "title,director":
+                log.info("Getting films by search in Directors and Titles");
+                films = searchFilmsByDirector(query);
+                films.addAll(searchFilmsByTitle(query));
+                break;
+            default:
+
+        }
+        return  films;
+    }
+
+    private List<Film> searchFilmsByTitle(String query) {
+        log.info("Getting films by search in Titles");
+        List<Film> films = filmStorage.searchFilmsByTitle(query).orElseThrow(() -> new AlreadyExistException("Film by query = " + query + " was not found"));
+        genreStorage.loadGenres(films);
+        directorStorage.loadDirectors(films);
+        return films;
+    }
+
+    private List<Film> searchFilmsByDirector(String query) {
+        log.info("Getting films by search in Directors");
+        List<Film> films = new ArrayList<>();
+        List<Film> allFilms = filmStorage.getFilms();
+        genreStorage.loadGenres(allFilms);
+        directorStorage.loadDirectors(allFilms);
+        List<Director> directors = directorStorage.searchDirectors(query).orElseThrow(() -> new AlreadyExistException("Film by query = " + query + " was not found"));
+        for (Director director: directors) {
+            films.addAll(getFilmsByDirector(allFilms, director));
+        }
+        return films;
+    }
+
     public Film createLike(Long filmId, Long userId) {
         log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
         likeStorage.createLike(filmId, userId);
@@ -73,6 +116,7 @@ public class FilmService {
     private void updateFilmRate(Long filmId) {
         Film updatedFilm = filmStorage.get(filmId).orElseThrow();
         genreStorage.loadGenres(Collections.singletonList(updatedFilm));
+        directorStorage.loadDirectors(Collections.singletonList(updatedFilm));
         updatedFilm.setRate(likeStorage.getLikesNumber(filmId));
         update(updatedFilm);
         System.out.println(updatedFilm);
