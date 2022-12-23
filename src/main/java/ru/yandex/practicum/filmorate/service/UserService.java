@@ -4,8 +4,13 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventOperation;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -23,16 +28,23 @@ import java.util.List;
 public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
+    private final EventStorage eventStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
         log.info("Adding a user with an id = {}, as a friend to a user with an id = {}", toUser, fromUser);
         friendStorage.addFriend(fromUser, toUser);
+        Event event = new Event(fromUser, EventType.FRIEND, EventOperation.ADD, toUser);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Add to Friends' event.");
         return get(fromUser);
     }
 
     public User deleteFriend(Long fromUser, Long toUser) {
         log.info("Deleting a user with an id = {}, in from friends to a user with an id = {}", toUser, fromUser);
         friendStorage.deleteFriend(fromUser, toUser);
+        Event event = new Event(fromUser, EventType.FRIEND, EventOperation.REMOVE, toUser);
+        eventStorage.addEvent(event);
+        log.info("Added the 'Remove from Friends' event.");
         return get(fromUser);
     }
 
@@ -80,5 +92,14 @@ public class UserService {
     public void deleteById(Long id) {
         userStorage.deleteById(id);
         log.info("User with id {} was deleted ", id);
+    }
+
+    public List<Event> getEvents(Long id) {
+
+        if (userStorage.get(id).isPresent()) {
+            return eventStorage.events(id);
+        } else {
+            throw new ObjectNotFoundException("Пользователь не найден.");
+        }
     }
 }
