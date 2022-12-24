@@ -178,10 +178,31 @@ public class FilmService {
     }
 
     public List<Film> commonFilms(Long userId, Long friendId) {
-        
+
         log.info("List of common films");
         List<Film> films = filmStorage.commonFilms(userId, friendId);
         genreStorage.loadGenres(films);
         return filmStorage.commonFilms(userId, friendId);
+    }
+
+    public List<Film> getPopularFilmByYear(int year) {
+        log.info("Received popular films in {}", year);
+        List<Film> films = filmStorage.getPopularFilmByYear(year);
+        genreStorage.loadGenres(films);
+        return films;
+    }
+
+    public List<Film> getPopularFilmByGenre(int genreId) {
+        log.info("Received popular film by genre {}", genreId);
+        List<Film> films = filmStorage.getPopularFilmByGenre(genreId);
+        genreStorage.loadGenres(films);
+        return films;
+    }
+
+    public List<Film> getPopularFilmByYearAndGenre(int year, int genreId) {
+        log.info("Received a popular film in year {} and genre {}", year, genreId);
+        List<Film> filmByYearAndGenre = filmStorage.getPopularFilmByYearAndGenre(year, genreId);
+        genreStorage.loadGenres(filmByYearAndGenre);
+        return filmByYearAndGenre;
     }
 }

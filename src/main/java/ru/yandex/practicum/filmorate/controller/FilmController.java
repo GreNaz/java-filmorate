@@ -85,4 +85,24 @@ public class FilmController {
         log.info("Received a request to search list of popular films with substring {} and with director/title {}", query, by);
         return filmService.searchFilmsByDirectorAndTitle(query, by);
     }
+
+
+    @GetMapping(value = "/popular", params = {"year"})
+    public List<Film> getPopularFilmByYear(@RequestParam Integer year) {
+        log.info("Received a request for a list popular film in {}", year);
+        return filmService.getPopularFilmByYear(year);
+    }
+
+    @GetMapping(value = "/popular", params = {"genreId"})
+    public List<Film> getPopularFilmByGenre(@RequestParam Integer genreId) {
+        log.info("Received a request for a list popular film by genre {}", genreId);
+        return filmService.getPopularFilmByGenre(genreId);
+    }
+
+    @GetMapping(value = "/popular", params = {"year", "genreId"})
+    public List<Film> getPopularFilmByYearAndGenre(@RequestParam Integer year,
+                                                   @RequestParam Integer genreId) {
+        log.info("Received a request for a list popular film in {} and genre {}", year, genreId);
+        return filmService.getPopularFilmByYearAndGenre(year, genreId);
+    }
 }

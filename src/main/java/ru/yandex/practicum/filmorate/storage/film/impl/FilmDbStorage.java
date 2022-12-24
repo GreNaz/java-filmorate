@@ -8,6 +8,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
@@ -145,6 +146,45 @@ public class FilmDbStorage implements FilmStorage {
                 "ORDER BY RATE;";
         return jdbcTemplate.query(sql, Mapper::filmMapper, userId, friendId);
     }
+    public List<Film> getPopularFilmByYear(int year) {
+        final String getPopularFilmByYear = "SELECT * " +
+                "FROM films " +
+                "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
+                "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
+                "WHERE EXTRACT(YEAR FROM release_date) = ? " +
+                "GROUP BY films.film_id, fl.film_id " +
+                "ORDER BY COUNT(fl.film_id) DESC";
+        return jdbcTemplate.query(getPopularFilmByYear, Mapper::filmMapper, year);
+    }
+
+    @Override
+    public List<Film> getPopularFilmByGenre(int genreId) {
+        final String getPopularFilmByGenre = "SELECT * " +
+                "FROM FILMS " +
+                "LEFT JOIN FILM_GENRE FG ON FILMS.FILM_ID = FG.FILM_ID " +
+                "LEFT JOIN GENRE G ON FG.GENRE_ID = G.GENRE_ID " +
+                "LEFT JOIN FILMS_LIKES FL ON FILMS.FILM_ID = FL.FILM_ID " +
+                "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
+                "WHERE G.GENRE_ID = ? " +
+                "GROUP BY FILMS.FILM_ID " +
+                "ORDER BY COUNT(FL.FILM_ID) DESC";
+        return jdbcTemplate.query(getPopularFilmByGenre, Mapper::filmMapper, genreId);
+    }
+
+    @Override
+    public List<Film> getPopularFilmByYearAndGenre(int year, int genreId) {
+        final String getPopularFilmByYearAndGenre = "SELECT * " +
+                "FROM films " +
+                "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
+                "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
+                "LEFT JOIN FILM_GENRE FG ON FILMS.FILM_ID = FG.FILM_ID " +
+                "LEFT JOIN GENRE G ON FG.GENRE_ID = G.GENRE_ID " +
+                "WHERE EXTRACT(YEAR FROM release_date) = ? AND G.GENRE_ID = ? " +
+                "GROUP BY films.film_id, fl.film_id " +
+                "ORDER BY COUNT(fl.film_id) DESC";
+        return jdbcTemplate.query(getPopularFilmByYearAndGenre, Mapper::filmMapper, year, genreId);
+    }
+
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {

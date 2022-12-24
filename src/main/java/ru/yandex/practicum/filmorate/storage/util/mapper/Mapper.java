@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 
 @UtilityClass
@@ -19,8 +20,8 @@ public class Mapper {
         int rate = resultSet.getInt("rate");
         Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"),
                 resultSet.getString("mpa.name"));
-
-        return new Film(id, name, description, releaseDate, duration, rate, mpa, new LinkedHashSet<>(), new LinkedHashSet<>());
+        return new Film(id, name, description, releaseDate, duration, rate, mpa, new LinkedHashSet<>(),
+                new LinkedHashSet<>());
     }
 
     public static Director directorMapper(ResultSet resultSet, int row) throws SQLException {
