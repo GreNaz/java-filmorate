@@ -16,4 +16,6 @@ public interface UserStorage {
     Optional<User> get(Long id);
 
     void deleteById(Long id);
+
+    List<Long> geSimilar(Long userId);
 }

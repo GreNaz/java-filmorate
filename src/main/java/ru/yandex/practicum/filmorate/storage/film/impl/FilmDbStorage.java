@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.storage.film.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -21,6 +24,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
+
 
     @Override
     public Film create(Film film) {
@@ -84,7 +89,7 @@ public class FilmDbStorage implements FilmStorage {
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE LCASE(films.name) LIKE ?";
         try {
-            return Optional.ofNullable(jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%"));
+            return Optional.of(jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%"));
         } catch (DataAccessException dataAccessException) {
             return Optional.empty();
         }
@@ -93,11 +98,13 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Optional<Film> get(Long id) {
 
-        String sql = "SELECT films.*, m.* " +
-                "FROM films " +
-                "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
-                "WHERE films.film_id = ?";
+        String sql = "SELECT FILMS.*, M.* " +
+                "FROM FILMS " +
+                "JOIN MPA M ON M.MPA_ID = FILMS.MPA_ID " +
+                "WHERE FILMS.FILM_ID = ?";
+
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, id);
+
         if (!filmRows.next()) {
             return Optional.empty();
         }
@@ -108,6 +115,19 @@ public class FilmDbStorage implements FilmStorage {
         } catch (DataAccessException dataAccessException) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<List<Film>> get(List<Long> id) {
+
+        String query = "SELECT FILMS.*, M.* " +
+                "FROM FILMS " +
+                "JOIN MPA M ON M.MPA_ID = FILMS.MPA_ID " +
+                "WHERE FILMS.FILM_ID IN (:id)";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("id", id);
+        return Optional.of(namedParameterJdbcTemplate.query(query, parameters, Mapper::filmMapper));
     }
 
     @Override
@@ -185,6 +205,34 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(getPopularFilmByYearAndGenre, Mapper::filmMapper, year, genreId);
     }
 
+
+    @Override
+    public List<Long> idCommonFilms(List<Long> usersId, Long userId, int count) {
+
+        String sql = "SELECT DISTINCT fl_1.film_id " +
+                "FROM films_likes AS fl_1 " +
+                "WHERE fl_1.user_id IN (:usersId) " +
+                "EXCEPT " +
+                "SELECT fl_2.film_id " +
+                "FROM films_likes AS fl_2 " +
+                "WHERE fl_2.user_id = :userId " +
+                "LIMIT :count";
+
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("usersId", usersId)
+                .addValue("userId", userId)
+                .addValue("count", count);
+
+        SqlRowSet sqlRowSet = namedParameterJdbcTemplate.queryForRowSet(sql, parameters);
+
+        List<Long> filmId = new ArrayList<>();
+
+        while (sqlRowSet.next()) {
+            filmId.add(sqlRowSet.getLong("FILM_ID"));
+        }
+        return filmId;
+    }
 
     private void addGenres(Film film) {
         if (film.getGenres() != null) {
