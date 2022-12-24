@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -18,7 +17,7 @@ public class DirectorController {
     private final DirectorService directorService;
 
     @PostMapping
-    public Optional<Director> creteDirectors(@Valid @RequestBody Director director) {
+    public Director creteDirectors(@Valid @RequestBody Director director) {
         log.info("Received a request to crete directors");
         return directorService.createDirector(director);
     }

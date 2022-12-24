@@ -25,7 +25,7 @@ public class EventDbStorage implements EventStorage {
     @Override
     public List<Event> events(long id) {
         List<Event> events = jdbcTemplate.query("SELECT * FROM events WHERE user_id = ?", this::mapRowToEvent, id);
-        log.info("A list of user id = "+id+" events has been sent");
+        log.info("A list of user id = " + id + " events has been sent");
         return events;
     }
 

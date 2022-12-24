@@ -16,9 +16,10 @@ import java.util.Optional;
 public class DirectorService {
     private final DirectorDbStorage directorDbStorage;
 
-    public Optional<Director> createDirector(Director director) {
+    public Director createDirector(Director director) {
         log.info("Create director");
-        return directorDbStorage.create(director);
+        return directorDbStorage.create(director).orElseThrow(() ->
+                new ObjectNotFoundException("Error creating director"));
     }
 
     public Director updateDirector(Director director) {
@@ -30,6 +31,7 @@ public class DirectorService {
         log.info("Delete director with id" + id);
         directorDbStorage.delete(id);
     }
+
     public List<Director> getDirectors() {
         log.info("Send director list");
         return directorDbStorage.getDirectors();

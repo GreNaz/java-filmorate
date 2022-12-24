@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.model.*;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
@@ -14,8 +13,10 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
-import javax.validation.ValidationException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -58,11 +59,12 @@ public class FilmService {
                 .filter(f -> f.getDirectors().contains(director))
                 .collect(Collectors.toList());
     }
+
     private final EventStorage eventStorage;
 
     public List<Film> searchFilmsByDirectorAndTitle(String query, String by) {
         List<Film> films = new ArrayList<>();
-        switch (by){
+        switch (by) {
             case "director":
                 log.info("Getting films by search in Directors");
                 films = searchFilmsByDirector(query);
@@ -79,7 +81,7 @@ public class FilmService {
             default:
 
         }
-        return  films;
+        return films;
     }
 
     private List<Film> searchFilmsByTitle(String query) {
@@ -96,8 +98,9 @@ public class FilmService {
         List<Film> allFilms = filmStorage.getFilms();
         genreStorage.loadGenres(allFilms);
         directorStorage.loadDirectors(allFilms);
-        List<Director> directors = directorStorage.searchDirectors(query).orElseThrow(() -> new AlreadyExistException("Film by query = " + query + " was not found"));
-        for (Director director: directors) {
+        List<Director> directors = directorStorage.searchDirectors(query).orElseThrow(() ->
+                new AlreadyExistException("Film by query = " + query + " was not found"));
+        for (Director director : directors) {
             films.addAll(getFilmsByDirector(allFilms, director));
         }
         return films;
@@ -178,10 +181,31 @@ public class FilmService {
     }
 
     public List<Film> commonFilms(Long userId, Long friendId) {
-        
+
         log.info("List of common films");
         List<Film> films = filmStorage.commonFilms(userId, friendId);
         genreStorage.loadGenres(films);
         return filmStorage.commonFilms(userId, friendId);
+    }
+
+    public List<Film> getPopularFilmByYear(int year) {
+        log.info("Received popular films in {}", year);
+        List<Film> films = filmStorage.getPopularFilmByYear(year);
+        genreStorage.loadGenres(films);
+        return films;
+    }
+
+    public List<Film> getPopularFilmByGenre(int genreId) {
+        log.info("Received popular film by genre {}", genreId);
+        List<Film> films = filmStorage.getPopularFilmByGenre(genreId);
+        genreStorage.loadGenres(films);
+        return films;
+    }
+
+    public List<Film> getPopularFilmByYearAndGenre(int year, int genreId) {
+        log.info("Received a popular film in year {} and genre {}", year, genreId);
+        List<Film> filmByYearAndGenre = filmStorage.getPopularFilmByYearAndGenre(year, genreId);
+        genreStorage.loadGenres(filmByYearAndGenre);
+        return filmByYearAndGenre;
     }
 }
