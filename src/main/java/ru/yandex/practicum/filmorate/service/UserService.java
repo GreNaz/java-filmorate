@@ -6,14 +6,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.EventOperation;
-import ru.yandex.practicum.filmorate.model.EventType;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.director.impl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.event.EventStorage;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.friends.FriendStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -29,6 +31,9 @@ public class UserService {
     private final UserStorage userStorage;
     private final FriendStorage friendStorage;
     private final EventStorage eventStorage;
+    private final FilmStorage filmStorage;
+    private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
         log.info("Adding a user with an id = {}, as a friend to a user with an id = {}", toUser, fromUser);
@@ -101,5 +106,25 @@ public class UserService {
         } else {
             throw new ObjectNotFoundException("Пользователь не найден.");
         }
+    }
+
+    public List<Film> recommendations(Long id, int count) {
+
+        //Получаем список id пользаков с общими лайками
+        List<Long> similarInterestUsers = userStorage.geSimilar(id);
+
+        if (similarInterestUsers.isEmpty()) {
+            return Collections.emptyList();
+        }
+        //Получаем список id реккомендуемых фильмов
+        List<Long> idRecommendationFilms = filmStorage.idCommonFilms(similarInterestUsers, id, count);
+
+        List<Film> films = filmStorage.get(idRecommendationFilms).orElseThrow(() ->
+                new ObjectNotFoundException("Film from  recommendation list was not found"));
+        genreStorage.loadGenres(films);
+        directorStorage.loadDirectors(films);
+        log.info("Send a list of recommended films for user id " + id);
+
+        return films;
     }
 }

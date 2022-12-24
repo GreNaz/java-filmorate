@@ -9,6 +9,7 @@ import java.time.LocalDate;
 @Setter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
 public class User {

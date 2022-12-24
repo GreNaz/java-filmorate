@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,10 +16,13 @@ public interface FilmStorage {
 
     Optional<Film> get(Long id);
 
+    Optional<List<Film>> get(List<Long> id);
+
     List<Film> getPopular(int count);
 
     void deleteById(Long id);
 
     List<Film> commonFilms(Long userId, Long friendId);
 
+    List<Long> idCommonFilms(List<Long> usersId, Long userId, int count);
 }
