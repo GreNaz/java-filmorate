@@ -7,7 +7,6 @@ import java.time.Instant;
 @Getter
 @Setter
 @Builder
-
 public class Event {
     private long eventId;
     private long userId;

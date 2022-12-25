@@ -97,7 +97,7 @@ public class UserService {
     public List<Event> getEvents(Long id) {
 
         if (userStorage.get(id).isPresent()) {
-            return eventStorage.events(id);
+            return eventStorage.getListEvents(id);
         } else {
             throw new ObjectNotFoundException("Пользователь не найден.");
         }

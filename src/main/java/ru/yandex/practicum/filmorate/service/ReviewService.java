@@ -48,7 +48,7 @@ public class ReviewService {
         Event event = new Event(result.getUserId(), EventType.REVIEW, EventOperation.UPDATE, review.getReviewId());
         log.info("Updated a 'Review'.");
         eventStorage.addEvent(event);
-        return get(review.getReviewId());
+        return result;
     }
 
     public void removeReview(Long id) {

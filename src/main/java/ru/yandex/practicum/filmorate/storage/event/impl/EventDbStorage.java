@@ -23,7 +23,7 @@ public class EventDbStorage implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Event> events(long id) {
+    public List<Event> getListEvents(long id) {
         List<Event> events = jdbcTemplate.query("SELECT * FROM events WHERE user_id = ?", this::mapRowToEvent, id);
         log.info("A list of user id = "+id+" events has been sent");
         return events;
@@ -31,7 +31,6 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public void addEvent(Event event) {
-
         String sqlQuery = "INSERT INTO events (user_id,event_type, event_operation,entity_id,time_stamp)" +
                 "VALUES (?,?,?,?,?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
