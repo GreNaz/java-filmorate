@@ -5,6 +5,7 @@ import lombok.*;
 @Getter
 @Setter
 @ToString
+@Builder
 @AllArgsConstructor
 public class Mpa {
     private int id;

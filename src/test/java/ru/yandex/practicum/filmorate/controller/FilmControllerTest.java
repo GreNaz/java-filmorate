@@ -2,21 +2,31 @@ package ru.yandex.practicum.filmorate.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.director.impl.DirectorDbStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.time.LocalDate;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,12 +39,14 @@ import static ru.yandex.practicum.filmorate.helper.TestDataHelper.*;
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @AutoConfigureTestDatabase
-
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class FilmControllerTest {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
+    private final DirectorDbStorage directorStorage;
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
+    final FilmService filmService;
 
     @Test
     void findAllTest() throws Exception {
@@ -46,6 +58,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(1)
     void addFilm() throws Exception {
         mockMvc.perform(
                         post("/films")
@@ -60,6 +73,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(2)
     void filmUpdateTest() throws Exception {
         filmStorage.create(FILM_2);
 
@@ -81,6 +95,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(3)
     void filmNotFoundForUpdateTest() throws Exception {
         FILM.setId(7);
         mockMvc.perform(
@@ -95,6 +110,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(4)
     void getFilmByIdTest() throws Exception {
 
         mockMvc.perform(
@@ -109,6 +125,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(5)
     void getFilmByIdNotFoundExceptionTest() throws Exception {
 
         mockMvc.perform(
@@ -121,6 +138,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(6)
     void addLikeAndRemoveTest() throws Exception {
         USER.setEmail("test4@test.ru");
         USER.setLogin("login4");
@@ -139,6 +157,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(7)
     void addLikeNotFoundExceptionTest() throws Exception {
 
         mockMvc.perform(
@@ -149,6 +168,7 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(8)
     void removeLikeNotFoundExceptionTest() throws Exception {
 
         mockMvc.perform(
@@ -161,6 +181,8 @@ public class FilmControllerTest {
     }
 
     @Test
+    @Order(9)
+    @DirtiesContext
     void getBestFilmTest() throws Exception {
         FILM_2.setId(2);
         filmStorage.update(FILM_2);
@@ -176,5 +198,208 @@ public class FilmControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(0).getName(), "2 Film"))
                 .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(1).getName(), "Film"));
+    }
+
+    @Test
+    @Order(10)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void getFilmsByDirectorWithoutSort() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors = new LinkedHashSet<>();
+        listDirectors.add(Director.builder().id(1).name("Director1").build());
+        directorStorage.create(Director.builder().id(1).name("Director1").build());
+        final Film filmWithDirector = Film.builder().name("Film").description("Фильм первый")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Film").description("Фильм первый")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.getFilmsByDirectorWithSort(1, "year"), List.of(filmService.get(1L)));
+    }
+
+    @Test
+    @Order(11)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void getFilmsByDirectorWithSortByYear() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors = new LinkedHashSet<>();
+        listDirectors.add(Director.builder().id(1).name("Director1").build());
+        directorStorage.create(Director.builder().id(1).name("Director1").build());
+        final Film filmWithDirector1 = Film.builder().name("Film1").description("Фильм первый")
+                .releaseDate(LocalDate.of(2010, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors)
+                .build();
+        final Film filmWithDirector2 = Film.builder().name("Film2").description("Фильм второй")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Film3").description("Фильм третий")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector1);
+        filmStorage.create(filmWithDirector2);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.getFilmsByDirectorWithSort(1, "year"), List.of(filmService.get(2L), filmService.get(1L)));
+    }
+
+    @Test
+    @Order(12)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void getFilmsByDirectorWithSortByLikes() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors = new LinkedHashSet<>();
+        listDirectors.add(Director.builder().id(1).name("Director1").build());
+        directorStorage.create(Director.builder().id(1).name("Director1").build());
+        final Film filmWithDirector11 = Film.builder().name("Film1").description("Фильм первый")
+                .releaseDate(LocalDate.of(2010, 1, 1)).duration(120)
+                .rate(10).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors)
+                .build();
+        final Film filmWithDirector22 = Film.builder().name("Film2").description("Фильм второй")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(4).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Film3").description("Фильм третий")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector11);
+        filmStorage.create(filmWithDirector22);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.getFilmsByDirectorWithSort(1, "likes"), List.of(filmService.get(2L), filmService.get(1L)));
+    }
+
+    @Test
+    @Order(13)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void searchFilmsByDirector() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors1 = new LinkedHashSet<>();
+        listDirectors1.add(Director.builder().id(1).name("Director1").build());
+        LinkedHashSet<Director> listDirectors2 = new LinkedHashSet<>();
+        listDirectors2.add(Director.builder().id(2).name("Director2").build());
+        directorStorage.create(Director.builder().id(1).name("Director1").build());
+        directorStorage.create(Director.builder().id(2).name("Director2").build());
+        final Film filmWithDirector1 = Film.builder().name("Film1").description("Фильм первый")
+                .releaseDate(LocalDate.of(2010, 1, 1)).duration(120)
+                .rate(10).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors1)
+                .build();
+        final Film filmWithDirector2 = Film.builder().name("Film2").description("Фильм второй")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(4).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors2)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Film3").description("Фильм третий")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector1);
+        filmStorage.create(filmWithDirector2);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("Dir", "director"), List.of(filmService.get(1L), filmService.get(2L)));
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("diRector2", "director"), List.of(filmService.get(2L)));
+    }
+
+    @Test
+    @Order(14)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void searchFilmsByTitle() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors1 = new LinkedHashSet<>();
+        listDirectors1.add(Director.builder().id(1).name("Director1").build());
+        LinkedHashSet<Director> listDirectors2 = new LinkedHashSet<>();
+        listDirectors2.add(Director.builder().id(2).name("Director2").build());
+        directorStorage.create(Director.builder().id(1).name("Director1").build());
+        directorStorage.create(Director.builder().id(2).name("Director2").build());
+        final Film filmWithDirector1 = Film.builder().name("Film1").description("Фильм первый")
+                .releaseDate(LocalDate.of(2010, 1, 1)).duration(120)
+                .rate(10).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors1)
+                .build();
+        final Film filmWithDirector2 = Film.builder().name("Film2").description("Фильм второй")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(4).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors2)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Film3").description("Фильм третий")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector1);
+        filmStorage.create(filmWithDirector2);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("fiLM1", "title"), List.of(filmService.get(1L)));
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("fiLM", "title"), List.of(filmService.get(1L), filmService.get(2L), filmService.get(3L)));
+    }
+
+    @Test
+    @Order(15)
+    @DirtiesContext(methodMode = DirtiesContext.MethodMode.BEFORE_METHOD)
+    void searchFilmsByDirectorAndTitle() {
+        LinkedHashSet<Genre> listGenres = new LinkedHashSet<>();
+        listGenres.add(Genre.builder().id(1).name("Комедия").build());
+        LinkedHashSet<Director> listDirectors1 = new LinkedHashSet<>();
+        listDirectors1.add(Director.builder().id(1).name("Director1").build());
+        LinkedHashSet<Director> listDirectors2 = new LinkedHashSet<>();
+        listDirectors2.add(Director.builder().id(2).name("Director2").build());
+        directorStorage.create(Director.builder().id(1).name("Director superfilm1").build());
+        directorStorage.create(Director.builder().id(2).name("Director2").build());
+        final Film filmWithDirector1 = Film.builder().name("Film1").description("Фильм первый")
+                .releaseDate(LocalDate.of(2010, 1, 1)).duration(120)
+                .rate(10).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors1)
+                .build();
+        final Film filmWithDirector2 = Film.builder().name("Film2").description("Фильм второй")
+                .releaseDate(LocalDate.of(2000, 1, 1)).duration(120)
+                .rate(4).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(listDirectors2)
+                .build();
+        final Film filmWithoutDirector = Film.builder().name("Superfilm13").description("Фильм третий")
+                .releaseDate(LocalDate.of(201, 1, 1)).duration(120)
+                .rate(1).mpa(Mpa.builder().id(1).name("G").build())
+                .genres(listGenres)
+                .directors(new LinkedHashSet<>())
+                .build();
+        filmStorage.create(filmWithDirector1);
+        filmStorage.create(filmWithDirector2);
+        filmStorage.create(filmWithoutDirector);
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("diRector2", "title,director"), List.of(filmService.get(2L)));
+        assertEquals(filmService.searchFilmsByDirectorAndTitle("superFILM", "title,director"), List.of(filmService.get(1L), filmService.get(3L)));
     }
 }
