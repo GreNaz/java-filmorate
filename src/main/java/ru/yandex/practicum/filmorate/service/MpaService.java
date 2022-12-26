@@ -17,9 +17,9 @@ public class MpaService {
 
     private final MpaDbStorage mpaDbStorage;
 
-    public List<Mpa> getRatings() {
+    public List<Mpa> get() {
         log.info("List of ratings sent");
-        return mpaDbStorage.getRatings();
+        return mpaDbStorage.get();
     }
 
     public Mpa get(int id) {

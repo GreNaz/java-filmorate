@@ -25,7 +25,7 @@ public class GenreDbStorage implements GenreStorage {
 
 
     @Override
-    public List<Genre> getGenres() {
+    public List<Genre> get() {
         String sql = "SELECT * FROM genre";
         return jdbcTemplate.query(sql, Mapper::genreMapper);
     }
@@ -44,7 +44,7 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public void loadGenres(List<Film> films) {
+    public void load(List<Film> films) {
 
         String sqlGenres = "SELECT film_id, g2.* " +
                 "FROM FILM_GENRE " +

@@ -20,9 +20,9 @@ public class GenreController {
     private final GenreService genreService;
 
     @GetMapping
-    public List<Genre> getGenres() {
+    public List<Genre> get() {
         log.info("Received a request to get genres");
-        return genreService.getGenres();
+        return genreService.get();
     }
 
     @GetMapping("/{id}")

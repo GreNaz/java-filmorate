@@ -24,7 +24,7 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<User> getUsers() {
+    public List<User> get() {
         String sql = "select * from USERS";
         return jdbcTemplate.query(sql, Mapper::userMapper);
     }
@@ -77,7 +77,7 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         final String deleteUser = "DELETE FROM users WHERE user_id = ?";
         jdbcTemplate.update(deleteUser, id);
     }

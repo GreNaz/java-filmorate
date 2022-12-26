@@ -18,7 +18,7 @@ public class MpaDbStorage implements MpaStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<Mpa> getRatings() {
+    public List<Mpa> get() {
         String sql = "SELECT * FROM mpa";
         return jdbcTemplate.query(sql, Mapper::mpaMapper);
     }
@@ -33,7 +33,7 @@ public class MpaDbStorage implements MpaStorage {
         return Optional.ofNullable(jdbcTemplate.queryForObject(sql, Mapper::mpaMapper, id));
     }
 
-    public void injectMpa(Film film) {
+    public void load(Film film) {
         film.setMpa(jdbcTemplate.queryForObject("SELECT * FROM mpa WHERE MPA_ID = ?",
                 Mapper::mpaMapper, film.getMpa().getId()));
     }

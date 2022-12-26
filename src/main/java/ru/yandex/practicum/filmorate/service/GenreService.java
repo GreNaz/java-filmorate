@@ -16,9 +16,9 @@ public class GenreService {
 
     private final GenreDbStorage genreDbStorage;
 
-    public List<Genre> getGenres() {
+    public List<Genre> get() {
         log.info("Send genre list");
-        return genreDbStorage.getGenres();
+        return genreDbStorage.get();
     }
 
     public Genre get(int id) {

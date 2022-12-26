@@ -20,9 +20,9 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public List<Mpa> getRatings() {
+    public List<Mpa> get() {
         log.info("Received a request to get ratings");
-        return mpaService.getRatings();
+        return mpaService.get();
     }
 
     @GetMapping("/{id}")

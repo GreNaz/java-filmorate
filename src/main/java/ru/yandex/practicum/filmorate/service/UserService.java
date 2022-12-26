@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.dictionary.EventOperation;
 import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
@@ -36,31 +37,31 @@ public class UserService {
 
     public User addFriend(Long fromUser, Long toUser) {
         log.info("Adding a user with an id = {}, as a friend to a user with an id = {}", toUser, fromUser);
-        friendStorage.addFriend(fromUser, toUser);
+        friendStorage.add(fromUser, toUser);
         Event event = new Event(fromUser, EventType.FRIEND, EventOperation.ADD, toUser);
-        eventStorage.addEvent(event);
+        eventStorage.create(event);
         log.info("Added the 'Add to Friends' event.");
         return get(fromUser);
     }
 
     public User deleteFriend(Long fromUser, Long toUser) {
         log.info("Deleting a user with an id = {}, in from friends to a user with an id = {}", toUser, fromUser);
-        friendStorage.deleteFriend(fromUser, toUser);
+        friendStorage.delete(fromUser, toUser);
         Event event = new Event(fromUser, EventType.FRIEND, EventOperation.REMOVE, toUser);
-        eventStorage.addEvent(event);
+        eventStorage.create(event);
         log.info("Added the 'Remove from Friends' event.");
         return get(fromUser);
     }
 
-    public List<User> mutualFriends(Long fromUser, Long toUser) {
+    public List<User> getCommon(Long fromUser, Long toUser) {
         log.info("List of mutual friends");
-        return friendStorage.mutualFriends(fromUser, toUser);
+        return friendStorage.getCommon(fromUser, toUser);
     }
 
     public List<User> getFriends(Long id) {
         get(id);
         log.info("List of friends of the user with id = {}", id);
-        return friendStorage.getFriends(id);
+        return friendStorage.get(id);
     }
 
     public User create(User user) {
@@ -74,9 +75,9 @@ public class UserService {
         return userStorage.update(user);
     }
 
-    public List<User> getUsers() {
+    public List<User> get() {
         log.info("List of all users");
-        return userStorage.getUsers();
+        return userStorage.get();
     }
 
     public User get(Long id) {
@@ -93,35 +94,35 @@ public class UserService {
         }
     }
 
-    public void deleteById(Long id) {
-        userStorage.deleteById(id);
+    public void delete(Long id) {
+        userStorage.delete(id);
         log.info("User with id {} was deleted ", id);
     }
 
     public List<Event> getEvents(Long id) {
 
         if (userStorage.get(id).isPresent()) {
-            return eventStorage.events(id);
+            return eventStorage.get(id);
         } else {
-            throw new ObjectNotFoundException("Пользователь не найден.");
+            throw new ObjectNotFoundException("User with id " + id + " was not found");
         }
     }
 
-    public List<Film> recommendations(Long id, int count) {
+    public List<Film> getRecommendations(Long id, int count) {
 
-        //Получаем список id пользаков с общими лайками
         List<Long> similarInterestUsers = userStorage.geSimilar(id);
 
         if (similarInterestUsers.isEmpty()) {
             return Collections.emptyList();
         }
-        //Получаем список id реккомендуемых фильмов
-        List<Long> idRecommendationFilms = filmStorage.idCommonFilms(similarInterestUsers, id, count);
+        List<Long> idRecommendationFilms = filmStorage.getIdOfCommon(similarInterestUsers, id, count);
 
         List<Film> films = filmStorage.get(idRecommendationFilms).orElseThrow(() ->
-                new ObjectNotFoundException("Film from  recommendation list was not found"));
-        genreStorage.loadGenres(films);
-        directorStorage.loadDirectors(films);
+                new ObjectNotFoundException("Film from recommendation list was not found"));
+
+        genreStorage.load(films);
+        directorStorage.load(films);
+
         log.info("Send a list of recommended films for user id " + id);
 
         return films;

@@ -14,7 +14,7 @@ public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void removeLike(Long filmId, Long userId) {
+    public void delete(Long filmId, Long userId) {
         String sql = "DELETE FROM films_likes " +
                 "WHERE film_id = ? AND user_id = ?";
 
@@ -26,7 +26,7 @@ public class LikeDbStorage implements LikeStorage {
     }
 
     @Override
-    public void createLike(Long filmId, Long userId) {
+    public void create(Long filmId, Long userId) {
         String sql = "MERGE INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
 
         int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
@@ -36,7 +36,7 @@ public class LikeDbStorage implements LikeStorage {
     }
 
     @Override
-    public Integer getLikesNumber(Long filmId) {
+    public Integer getCount(Long filmId) {
         String sql = "SELECT COUNT(*) FROM films_likes WHERE film_id = ?";
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
         if (!filmRows.next()) {

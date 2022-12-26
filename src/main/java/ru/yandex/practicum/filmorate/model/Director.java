@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.controller.validation.Update;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -11,8 +13,10 @@ import java.util.Map;
 @ToString
 @AllArgsConstructor
 @EqualsAndHashCode
+
 public class Director {
-    private int id;
+    @NotNull(groups = Update.class)
+    private Integer id;
 
     @NotBlank
     private String name;

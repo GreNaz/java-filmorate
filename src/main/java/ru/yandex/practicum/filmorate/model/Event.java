@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.model.dictionary.EventOperation;
 
 import java.time.Instant;
 
@@ -8,7 +9,6 @@ import java.time.Instant;
 @Setter
 @Builder
 @AllArgsConstructor
-
 public class Event {
     private long eventId;
     private long userId;

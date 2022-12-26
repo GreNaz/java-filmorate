@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.director.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -52,11 +51,14 @@ public class DirectorDbStorage implements DirectorStorage {
     public void delete(int id) {
         String sql = "DELETE FROM director " +
                 "WHERE director_id = ?";
-        jdbcTemplate.update(sql, id);
+        int result = jdbcTemplate.update(sql, id);
+        if (result == 0) {
+            throw new UserAlreadyExistException("Director id = " + id + " was not found");
+        }
     }
 
     @Override
-    public List<Director> getDirectors() {
+    public List<Director> get() {
         String sql = "SELECT * FROM director";
         return jdbcTemplate.query(sql, Mapper::directorMapper);
     }
@@ -73,7 +75,7 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public void loadDirectors(List<Film> films) {
+    public void load(List<Film> films) {
 
         String sqlDirectors = "SELECT film_id, d2.* " +
                 "FROM film_director " +
@@ -101,14 +103,13 @@ public class DirectorDbStorage implements DirectorStorage {
     }
 
     @Override
-    public Optional<List<Director>> searchDirectors(String query) {
+    public List<Film> search(String query) {
         String sql = "SELECT * " +
-                "FROM DIRECTOR " +
-                "WHERE LCASE(name) LIKE ?";
-        try {
-            return Optional.ofNullable(jdbcTemplate.query(sql, Mapper::directorMapper, "%" + query.toLowerCase() + "%"));
-        } catch (DataAccessException dataAccessException) {
-            return Optional.empty();
-        }
+                "FROM FILMS " +
+                "LEFT JOIN mpa ON FILMS.MPA_ID = MPA.MPA_ID " +
+                "LEFT JOIN film_director fd ON films.film_id = fd.FILM_ID " +
+                "LEFT JOIN director d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                "WHERE LCASE(d.NAME) LIKE ?";
+        return jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%");
     }
 }

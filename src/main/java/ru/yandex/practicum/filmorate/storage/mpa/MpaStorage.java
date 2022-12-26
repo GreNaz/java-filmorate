@@ -9,10 +9,10 @@ import java.util.Optional;
 
 public interface MpaStorage {
 
-    List<Mpa> getRatings();
+    List<Mpa> get();
 
     Optional<Mpa> get(int id);
 
-    void injectMpa(Film film);
+    void load(Film film);
 
 }

@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GenreStorage {
-    List<Genre> getGenres();
+    List<Genre> get();
     Optional<Genre> get(int id);
-    void loadGenres(List<Film> films);
+    void load(List<Film> films);
 }
