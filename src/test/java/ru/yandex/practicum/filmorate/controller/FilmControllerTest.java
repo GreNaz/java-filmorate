@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -35,6 +36,7 @@ public class FilmControllerTest {
     private final UserStorage userStorage;
     private final MockMvc mockMvc;
     private final ObjectMapper objectMapper;
+    private final FilmService filmService;
 
     @Test
     void findAllTest() throws Exception {
@@ -176,5 +178,21 @@ public class FilmControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(0).getName(), "2 Film"))
                 .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(1).getName(), "Film"));
+    }
+
+    @Test
+    void commonFilmsTest() throws Exception {
+
+        userStorage.create(USER_2);
+        filmStorage.create(FILM);
+        filmService.createLike(1L, 1L);
+        filmService.createLike(1L, 2L);
+        mockMvc.perform(
+                        get("/films/common")
+                )
+                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).size(), 1))
+                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getId(), 1))
+                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getName(), "Film"))
+                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getDescription(), "good film"));
     }
 }
