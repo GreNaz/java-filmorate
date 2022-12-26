@@ -11,13 +11,16 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dictionary.FilmSortBy;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.util.mapper.Mapper;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -74,7 +77,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getFilms() {
+    public List<Film> get() {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id";
@@ -82,16 +85,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Optional<List<Film>> searchFilmsByTitle(String query) {
+    public List<Film> getByTitle(String query) {
         String sql = "SELECT films.*, m.* " +
                 "FROM films " +
                 "JOIN mpa m ON m.MPA_ID = films.mpa_id " +
                 "WHERE LCASE(films.name) LIKE ?";
-        try {
-            return Optional.of(jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%"));
-        } catch (DataAccessException dataAccessException) {
-            return Optional.empty();
-        }
+
+        return jdbcTemplate.query(sql, Mapper::filmMapper, "%" + query.toLowerCase() + "%");
+    }
+
+    @Override
+    public List<Film> getByDirectorAndTitle(String query) {
+        String sql = "SELECT * " +
+                "FROM FILMS " +
+                "LEFT JOIN mpa ON FILMS.MPA_ID = MPA.MPA_ID " +
+                "LEFT JOIN film_director fd ON films.film_id = fd.FILM_ID " +
+                "LEFT JOIN director d ON fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                "WHERE LCASE(films.name)  LIKE ? OR LCASE(d.NAME) LIKE ? " +
+                "ORDER BY FILMS.FILM_ID DESC ";
+
+        String search = "%" + query.toLowerCase() + "%";
+
+        return jdbcTemplate.query(sql, Mapper::filmMapper, search, search);
     }
 
     @Override
@@ -109,15 +124,14 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         try {
-            Film film = jdbcTemplate.queryForObject(sql, Mapper::filmMapper, id);
-            return Optional.ofNullable(film);
+            return Optional.ofNullable(jdbcTemplate.queryForObject(sql, Mapper::filmMapper, id));
         } catch (DataAccessException dataAccessException) {
             return Optional.empty();
         }
     }
 
     @Override
-    public Optional<List<Film>> get(List<Long> id) {
+    public List<Film> get(List<Long> id) {
 
         String query = "SELECT FILMS.*, M.* " +
                 "FROM FILMS " +
@@ -126,7 +140,7 @@ public class FilmDbStorage implements FilmStorage {
 
         SqlParameterSource parameters = new MapSqlParameterSource()
                 .addValue("id", id);
-        return Optional.of(namedParameterJdbcTemplate.query(query, parameters, Mapper::filmMapper));
+        return namedParameterJdbcTemplate.query(query, parameters, Mapper::filmMapper);
     }
 
     @Override
@@ -147,13 +161,13 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void deleteById(Long id) {
+    public void delete(Long id) {
         final String findFilm = "DELETE FROM films WHERE film_id = ?";
         jdbcTemplate.update(findFilm, id);
     }
 
     @Override
-    public List<Film> commonFilms(Long userId, Long friendId) {
+    public List<Film> getCommon(Long userId, Long friendId) {
 
         String sql = "SELECT f2.*, M.*\n" +
                 "FROM FILMS_LIKES\n" +
@@ -166,7 +180,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, Mapper::filmMapper, userId, friendId);
     }
 
-    public List<Film> getPopularFilmByYear(int year) {
+    public List<Film> getPopularByYear(int year) {
         final String getPopularFilmByYear = "SELECT * " +
                 "FROM films " +
                 "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
@@ -178,7 +192,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilmByGenre(int genreId) {
+    public List<Film> getPopularByGenre(int genreId) {
         final String getPopularFilmByGenre = "SELECT * " +
                 "FROM FILMS " +
                 "LEFT JOIN FILM_GENRE FG ON FILMS.FILM_ID = FG.FILM_ID " +
@@ -192,7 +206,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopularFilmByYearAndGenre(int year, int genreId) {
+    public List<Film> getPopularByYearAndGenre(int year, int genreId) {
         final String getPopularFilmByYearAndGenre = "SELECT * " +
                 "FROM films " +
                 "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
@@ -207,7 +221,7 @@ public class FilmDbStorage implements FilmStorage {
 
 
     @Override
-    public List<Long> idCommonFilms(List<Long> usersId, Long userId, int count) {
+    public List<Long> getIdOfCommon(List<Long> usersId, Long userId, int count) {
 
         String sql = "SELECT DISTINCT fl_1.film_id " +
                 "FROM films_likes AS fl_1 " +
@@ -232,6 +246,33 @@ public class FilmDbStorage implements FilmStorage {
             filmId.add(sqlRowSet.getLong("FILM_ID"));
         }
         return filmId;
+    }
+
+    @Override
+    public List<Film> getByDirector(int id, FilmSortBy sortBy) {
+
+        String sortType = "FILMS.FILM_ID";
+
+        if (sortBy.name().equals(FilmSortBy.year.name())) {
+            sortType = "FILMS.RELEASE_DATE";
+        } else if (sortBy.name().equals(FilmSortBy.likes.name())) {
+            sortType = "FILMS.RATE";
+        }
+
+        String getFilmByDirector = "SELECT * " +
+                "FROM films " +
+                "LEFT JOIN mpa m ON films.mpa_id = m.mpa_id " +
+                "LEFT JOIN film_director fd ON films.film_id = fd.film_id " +
+                "LEFT JOIN director d ON fd.director_id = d.director_id " +
+                "WHERE d.director_id = ? " +
+                "GROUP BY films.film_id " +
+                "ORDER BY " + sortType;
+        
+        List<Film> films = jdbcTemplate.query(getFilmByDirector, Mapper::filmMapper, id);
+        if (films.isEmpty()) {
+            throw new ObjectNotFoundException("Film with director id " + id + " not found");
+        }
+        return films;
     }
 
     private void addGenres(Film film) {

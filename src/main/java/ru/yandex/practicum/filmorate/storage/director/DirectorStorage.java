@@ -8,12 +8,17 @@ import java.util.Optional;
 
 public interface DirectorStorage {
     Optional<Director> create(Director director);
+
     Director update(Director director);
+
     void delete(int id);
-    List<Director> getDirectors();
+
+    List<Director> get();
+
     Optional<Director> get(int id);
 
-    void loadDirectors(List<Film> films);
+    void load(List<Film> films);
 
-    Optional<List<Director>> searchDirectors(String query);
+    List<Film> getByDirector(String query);
+
 }

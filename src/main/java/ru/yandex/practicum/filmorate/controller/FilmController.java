@@ -4,12 +4,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.validation.Update;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dictionary.FilmSearchBy;
+import ru.yandex.practicum.filmorate.model.dictionary.FilmSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Validated
@@ -26,13 +33,14 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@Valid @RequestBody Film film) {
+    public Film update(@Validated(Update.class) @RequestBody Film film) {
         log.info("Received a request to update film with id {}", film.getId());
         return filmService.update(film);
     }
 
     @PutMapping("/{filmId}/like/{userId}")
-    public Film createLike(@PathVariable Long filmId, @PathVariable Long userId) {
+    public Film createLike(@PathVariable Long filmId,
+                           @PathVariable Long userId) {
         log.info("Received a request to add like to film with id: {}", filmId);
         return filmService.createLike(filmId, userId);
     }
@@ -56,7 +64,8 @@ public class FilmController {
     }
 
     @DeleteMapping("/{filmId}/like/{userId}")
-    public Film removeLike(@PathVariable Long filmId, @PathVariable Long userId) {
+    public Film removeLike(@PathVariable Long filmId,
+                           @PathVariable Long userId) {
         log.info("Received a request to remove like from film with an id: {}", filmId);
         return filmService.removeLike(filmId, userId);
     }
@@ -69,26 +78,30 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getFilmsByDirector(@PathVariable int directorId, @RequestParam String sortBy) {
+    public List<Film> getBy(@PathVariable int directorId,
+                            @RequestParam FilmSortBy sortBy) {
         log.info("Received a request to get list of {} popular films", directorId);
         return filmService.getFilmsByDirectorWithSort(directorId, sortBy);
     }
 
     @DeleteMapping("/{id}")
-    public void deleteFilm(@PathVariable Long id) {
-        filmService.deleteById(id);
-        log.info("Был удален фильм с id {}", id);
+    public void delete(@PathVariable Long id) {
+        filmService.delete(id);
+        log.info("Film with an id {} was deleted", id);
     }
 
     @GetMapping("/search")
-    public List<Film> getFilmsByDirector(@RequestParam String query, @RequestParam String by) {
+    public List<Film> getBy(@RequestParam String query,
+                            @RequestParam String by) {
         log.info("Received a request to search list of popular films with substring {} and with director/title {}", query, by);
-        return filmService.searchFilmsByDirectorAndTitle(query, by);
+        Set<FilmSearchBy> filteredBy = Arrays.stream(by.split(",")).map(FilmSearchBy::valueOf).collect(Collectors.toSet());
+
+        return filmService.getByDirector(query, filteredBy);
     }
 
 
     @GetMapping(value = "/popular", params = {"year"})
-    public List<Film> getPopularFilmByYear(@RequestParam Integer year) {
+    public List<Film> getPopularFilmByYear(@RequestParam @Min(1895) Integer year) {
         log.info("Received a request for a list popular film in {}", year);
         return filmService.getPopularFilmByYear(year);
     }
@@ -100,7 +113,7 @@ public class FilmController {
     }
 
     @GetMapping(value = "/popular", params = {"year", "genreId"})
-    public List<Film> getPopularFilmByYearAndGenre(@RequestParam Integer year,
+    public List<Film> getPopularFilmByYearAndGenre(@RequestParam @Min(1895) Integer year,
                                                    @RequestParam Integer genreId) {
         log.info("Received a request for a list popular film in {} and genre {}", year, genreId);
         return filmService.getPopularFilmByYearAndGenre(year, genreId);

@@ -20,14 +20,14 @@ public class MpaController {
     private final MpaService mpaService;
 
     @GetMapping
-    public List<Mpa> getRatings() {
+    public List<Mpa> get() {
         log.info("Received a request to get ratings");
-        return mpaService.getRatings();
+        return mpaService.get();
     }
 
     @GetMapping("/{id}")
     public Mpa get(@PathVariable int id) {
-        log.info("Received a request to get rating with id = " + id);
+        log.info("Received a request to get rating with id = {}", id);
         return mpaService.get(id);
     }
 }

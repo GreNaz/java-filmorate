@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.*;
+import ru.yandex.practicum.filmorate.controller.validation.Update;
 import ru.yandex.practicum.filmorate.model.annotation.ReleaseDate;
 
 import javax.validation.constraints.*;
@@ -16,6 +17,7 @@ import java.util.LinkedHashSet;
 public class Film {
 
     @EqualsAndHashCode.Include
+    @NotNull(groups = Update.class, message = "Received a film with an empty id")
     private long id;
 
     @NotBlank(message = "Received a movie with an empty title")

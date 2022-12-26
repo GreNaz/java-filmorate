@@ -16,7 +16,7 @@ public class FriendDbStorage implements FriendStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<User> getFriends(Long id) {
+    public List<User> get(Long id) {
         String sql = "SELECT USERS.USER_ID, email, login, name, birthday " +
                 "FROM USERS " +
                 "LEFT JOIN friendship f on users.USER_ID = f.friend_id " +
@@ -25,7 +25,7 @@ public class FriendDbStorage implements FriendStorage {
     }
 
     @Override
-    public void addFriend(Long followingId, Long followerId) {
+    public void add(Long followingId, Long followerId) {
         String sqlForWrite = "MERGE INTO FRIENDSHIP (USER_ID, FRIEND_ID) " +
                 "VALUES (?, ?)";
 
@@ -38,7 +38,7 @@ public class FriendDbStorage implements FriendStorage {
     }
 
     @Override
-    public void deleteFriend(Long followingId, Long followerId) {
+    public void delete(Long followingId, Long followerId) {
         String sql = "DELETE FROM FRIENDSHIP WHERE USER_ID = ? AND FRIEND_ID = ?";
 
         int resultUpdate = jdbcTemplate.update(sql, followingId, followerId);
@@ -50,7 +50,7 @@ public class FriendDbStorage implements FriendStorage {
     }
 
     @Override
-    public List<User> mutualFriends(Long firstId, Long secondId) {
+    public List<User> getCommon(Long firstId, Long secondId) {
         String sql = "SELECT u.USER_ID, email, login, name, birthday " +
                 "FROM friendship AS f " +
                 "LEFT JOIN users u ON u.USER_ID = f.friend_id " +

@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -9,10 +10,12 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
 import java.util.List;
 
 @Slf4j
 @RestController
+@Validated
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
@@ -43,13 +46,13 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAll() {
+    public List<User> get() {
         log.info("Received a request to get all users");
-        return userService.getUsers();
+        return userService.get();
     }
 
     @GetMapping("/{id}")
-    public User getUser(
+    public User get(
             @PathVariable Long id) {
         log.info("Received a request to get user with id: {} ", id);
         return userService.get(id);
@@ -63,19 +66,19 @@ public class UserController {
     }
 
     @GetMapping("/{id}/recommendations")
-    public List<Film> recommendations(
+    public List<Film> getRecommendations(
             @PathVariable Long id,
-            @RequestParam(required = false, defaultValue = "10") Integer count) {
+            @RequestParam(defaultValue = "10") @Positive Integer count) {
         log.info("Received a request to get recommendations to user with id {}", id);
-        return userService.recommendations(id, count);
+        return userService.getRecommendations(id, count);
     }
 
     @GetMapping("/{fromId}/friends/common/{toId}")
-    public List<User> mutualFriends(
+    public List<User> getCommon(
             @PathVariable Long fromId,
             @PathVariable Long toId) {
         log.info("Received a request to get common friends at users with id: {} and {}", fromId, toId);
-        return userService.mutualFriends(fromId, toId);
+        return userService.getCommon(fromId, toId);
     }
 
     @DeleteMapping("/{fromId}/friends/{toId}")
@@ -87,13 +90,15 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public void removeUserById(@PathVariable Long id) {
+    public void delete(
+            @PathVariable Long id) {
         log.info("Received a request to remove user with id: {} ", id);
-        userService.deleteById(id);
+        userService.delete(id);
     }
 
     @GetMapping("/{id}/feed")
-    public List<Event> getEvents(@PathVariable("id") Long id) {
+    public List<Event> getEvents(
+            @PathVariable("id") Long id) {
         log.info("Get events {}", id);
         return userService.getEvents(id);
     }

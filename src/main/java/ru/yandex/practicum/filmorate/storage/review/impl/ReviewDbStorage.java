@@ -65,7 +65,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void removeReview(Long id) {
+    public void delete(Long id) {
         String delete = "DELETE " +
                 "FROM REVIEW " +
                 "WHERE REVIEW_ID = ?";
@@ -86,13 +86,13 @@ public class ReviewDbStorage implements ReviewStorage {
 
         if (!reviewSet.next()) {
             return Optional.empty();
+        } else {
+            return Optional.of(jdbcTemplate.queryForObject(get, Mapper::reviewMapper, id));
         }
-
-        return Optional.ofNullable(jdbcTemplate.queryForObject(get, Mapper::reviewMapper, id));
     }
 
     @Override
-    public List<Review> getReviews(Long filmId, int count) {
+    public List<Review> get(Long filmId, int count) {
         String get = "SELECT * " +
                 "FROM REVIEW " +
                 "WHERE FILM_ID = ?" +
@@ -102,7 +102,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> getReviews() {
+    public List<Review> get() {
         String sql = "SELECT * " +
                 "FROM REVIEW " +
                 "ORDER BY USEFUL DESC";
@@ -110,7 +110,7 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public void creatFeedback(Long id, Long userId, boolean isLike) {
+    public void creatFeedback(Long id, Long userId, int isLike) {
         String sql = "MERGE INTO " +
                 "REVIEW_LIKES ( REVIEW_ID, USER_ID, IS_LIKE ) " +
                 "VALUES  ( ?, ?, ? )";
@@ -120,18 +120,11 @@ public class ReviewDbStorage implements ReviewStorage {
         if (resultUpdate == 0) {
             throw new ObjectNotFoundException("Not found review or user");
         }
-
-        if (isLike) {
-            incrementUseful(id);
-            log.info("Success add positive feedback from user with id {} to review with id {}", userId, id);
-        } else {
-            decrementUseful(id);
-            log.info("Success add negative feedback from user with id {} to review with id {}", userId, id);
-        }
+        updateUseful(id);
     }
 
     @Override
-    public void removeFeedback(Long id, Long userId, boolean isLike) {
+    public void removeFeedback(Long id, Long userId, int isLike) {
 
         String sql = "DELETE FROM " +
                 "REVIEW_LIKES " +
@@ -144,37 +137,21 @@ public class ReviewDbStorage implements ReviewStorage {
         if (resultUpdate == 0) {
             throw new ObjectNotFoundException("Not found review or user");
         }
-
-        if (!isLike) {
-            incrementUseful(id);
-            log.info("Success delete negative feedback from user with id {} to review with id {}", userId, id);
-        } else {
-            decrementUseful(id);
-            log.info("Success delete positive feedback from user with id {} to review with id {}", userId, id);
-        }
+        updateUseful(id);
     }
 
-    private void incrementUseful(Long id) {
-        String increment = "UPDATE REVIEW " +
-                "SET USEFUL = USEFUL + 1 " +
+    private void updateUseful(Long id) {
+        String updateUseful = "UPDATE REVIEW R " +
+                "SET USEFUL = " +
+                "(SELECT SUM(L.IS_LIKE) " +
+                "FROM REVIEW_LIKES L " +
+                "WHERE L.REVIEW_ID = R.REVIEW_ID)  " +
                 "WHERE REVIEW_ID = ?";
 
-        int updateResult = jdbcTemplate.update(increment, id);
+        int updateResult = jdbcTemplate.update(updateUseful, id);
 
         if (updateResult == 0) {
-            throw new ObjectNotFoundException("Error in process adding useful to review");
-        }
-    }
-
-    private void decrementUseful(Long id) {
-        String decrement = "UPDATE REVIEW " +
-                "SET USEFUL = USEFUL - 1 " +
-                "WHERE REVIEW_ID = ?";
-
-        int updateResult = jdbcTemplate.update(decrement, id);
-
-        if (updateResult == 0) {
-            throw new ObjectNotFoundException("Error in process deleting useful from review");
+            throw new ObjectNotFoundException("Error in process update useful for review");
         }
     }
 }

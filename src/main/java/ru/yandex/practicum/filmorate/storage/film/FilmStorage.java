@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.dictionary.FilmSortBy;
 
 import java.util.List;
 import java.util.Optional;
@@ -10,26 +11,30 @@ public interface FilmStorage {
 
     Film update(Film film);
 
-    List<Film> getFilms();
+    List<Film> get();
 
-    Optional<List<Film>> searchFilmsByTitle(String query);
+    List<Film> getByDirectorAndTitle(String query);
+
+    List<Film> getByTitle(String query);
+
+    List<Film> getByDirector(int id, FilmSortBy sortBy);
 
     Optional<Film> get(Long id);
 
-    Optional<List<Film>> get(List<Long> id);
+    List<Film> get(List<Long> id);
 
     List<Film> getPopular(int count);
 
-    void deleteById(Long id);
+    void delete(Long id);
 
-    List<Film> commonFilms(Long userId, Long friendId);
+    List<Film> getCommon(Long userId, Long friendId);
 
-    List<Film> getPopularFilmByYear(int year);
+    List<Film> getPopularByYear(int year);
 
-    List<Film> getPopularFilmByGenre(int genreId);
+    List<Film> getPopularByGenre(int genreId);
 
-    List<Film> getPopularFilmByYearAndGenre(int year, int genreId);
+    List<Film> getPopularByYearAndGenre(int year, int genreId);
 
-    List<Long> idCommonFilms(List<Long> usersId, Long userId, int count);
+    List<Long> getIdOfCommon(List<Long> usersId, Long userId, int count);
 
 }
