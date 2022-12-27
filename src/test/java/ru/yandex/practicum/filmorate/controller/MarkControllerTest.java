@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
@@ -21,10 +20,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -35,6 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MarkControllerTest {
 
     private final FilmStorage filmStorage;
+    private final FilmService filmService;
     private final MarksStorage marksStorage;
     private final UserStorage userStorage;
     private final MockMvc mockMvc;
@@ -62,11 +60,9 @@ class MarkControllerTest {
                 .andExpect(status().isOk());
 
         //проверка что рейтинг в базе пересчитывается корректно
-        assertEquals(marksStorage.get(firstTestFilm.getId()), 5.0);
+        assertEquals(marksStorage.getRate(firstTestFilm.getId()), 5.0);
         //проверка что рейтинг при получении фильма пересчитывется корректно
-        assertEquals(filmStorage.get(firstTestFilm.getId()).get().getRate(), 5.0);
-
-
+        assertEquals(filmService.get(firstTestFilm.getId()).getRate(), 5.0);
     }
 
     @Test

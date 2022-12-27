@@ -38,7 +38,7 @@ public class LikeDbStorage implements LikeStorage {
     }
 
     @Override
-    public @Positive Double getCount(Long filmId) {
+    public Double getRate(Long filmId) {
         String sql = "SELECT COUNT(*) FROM films_likes WHERE film_id = ?";
         SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
         if (!filmRows.next()) {

@@ -16,15 +16,16 @@ public class MarkService {
     private final FilmStorage filmStorage;
 
     //Добавление новой оценки или обновление существующей
-    public void create(Long filmId, Long userId, int mark) {
+    public Film create(Long filmId, Long userId, int mark) {
         marksStorage.create(filmId, userId, mark);
         updateFilmRate(filmId);
+        return filmStorage.get(filmId).get();
     }
 
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(marksStorage.get(filmId));
+        film.setRate(marksStorage.getRate(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
@@ -33,6 +34,6 @@ public class MarkService {
     }
 
     public String getByFilm(Long filmId) {
-        return String.format("%.1f", marksStorage.get(filmId));
+        return String.format("%.1f", marksStorage.getRate(filmId));
     }
 }

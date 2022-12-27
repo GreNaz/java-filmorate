@@ -10,7 +10,7 @@ public interface MarksStorage {
 
     void delete(Long filmId, Long userId);
 
-    double get(Long filmId);
+    double getRate(Long filmId);
 
     List<Mark> getByUser(Long userId);
 }

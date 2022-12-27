@@ -103,7 +103,7 @@ public class FilmService {
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(marksStorage.get(filmId));
+        film.setRate(likeStorage.getRate(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
@@ -147,6 +147,7 @@ public class FilmService {
                 () -> new AlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.load(Collections.singletonList(film));
         directorStorage.load(Collections.singletonList(film));
+        film.setRate(marksStorage.getRate(id));
         return film;
     }
 

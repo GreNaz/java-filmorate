@@ -8,5 +8,5 @@ public interface LikeStorage {
 
     void create(Long filmId, Long userId);
 
-    @Positive Double getCount(Long filmId);
+    Double getRate(Long filmId);
 }

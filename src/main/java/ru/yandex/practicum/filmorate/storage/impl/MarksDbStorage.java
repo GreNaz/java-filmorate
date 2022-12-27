@@ -32,7 +32,7 @@ public class MarksDbStorage implements MarksStorage {
     }
 
     @Override
-    public double get(Long filmId) {
+    public double getRate(Long filmId) {
         final String getMarks = "SELECT AVG(MARK)/COUNT(*) " +
                 "FROM MARKS m " +
                 "LEFT JOIN FILMS f ON f.film_id = m.film_id " +
