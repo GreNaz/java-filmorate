@@ -99,7 +99,7 @@ public class FilmService {
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(likeStorage.getCount(filmId));
+        film.setRate(marksStorage.getMarks(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
@@ -188,18 +188,14 @@ public class FilmService {
     }
 
     public void addMarks(Long filmId, Long userId, Integer mark) {
-        boolean isPositive = true;
-        if(mark <= 4) {
-            isPositive = false;
-        }
-        marksStorage.addMarks(filmId, userId, isPositive);
+        marksStorage.addMarks(filmId, userId, mark);
     }
 
-    public void deleteMarks(Long userId) {
-        marksStorage.deleteMarks(userId);
+    public void deleteMarks(Long filmId, Long userId) {
+        marksStorage.deleteMarks(filmId, userId);
     }
 
-    public Double getMarksByFilm(Long filmId) {
-        return marksStorage.getMarks(filmId);
+    public String getMarksByFilm(Long filmId) {
+         return String.format("%.1f",marksStorage.getMarks(filmId));
     }
 }

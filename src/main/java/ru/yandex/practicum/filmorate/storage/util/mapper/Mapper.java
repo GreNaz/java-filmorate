@@ -16,7 +16,7 @@ public class Mapper {
         String description = resultSet.getString("description");
         LocalDate releaseDate = resultSet.getDate("release_date").toLocalDate();
         int duration = resultSet.getInt("duration");
-        int rate = resultSet.getInt("rate");
+        Double rate = resultSet.getDouble("rate");
         Mpa mpa = new Mpa(resultSet.getInt("mpa.mpa_id"),
                 resultSet.getString("mpa.name"));
         return new Film(id, name, description, releaseDate, duration, rate, mpa, new LinkedHashSet<>(),
