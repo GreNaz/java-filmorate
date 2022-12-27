@@ -147,7 +147,10 @@ public class FilmService {
                 () -> new AlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.load(Collections.singletonList(film));
         directorStorage.load(Collections.singletonList(film));
+
+        //Для рефакторинга (странно что тут не было film.setRate(likeStorage.getRate(id)) )
         film.setRate(marksStorage.getRate(id));
+
         return film;
     }
 
