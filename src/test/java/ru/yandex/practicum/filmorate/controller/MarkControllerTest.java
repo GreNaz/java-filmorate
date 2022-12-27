@@ -29,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-//@AutoConfigureTestDatabase
+@AutoConfigureTestDatabase
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MarkControllerTest {
 
@@ -43,28 +43,26 @@ class MarkControllerTest {
     @Order(1)
     void createMark() throws Exception {
 
-        User firstTestUser = userStorage.create(
-                new User(10,
-                        "firstTestUser@mail.ru",
-                        "firstTestUser",
-                        "firstTestUserName",
-                        LocalDate.of(1998, 9, 19)
-                ));
+        User firstTestUser = userStorage.create(User.builder()
+                .email("firstTestUser@mail.ru")
+                .login("firstTestUser")
+                .name("firstTestUserName")
+                .birthday(LocalDate.of(1998, 9, 19))
+                .build());
 
-        Film firstTestFilm = filmStorage.create(
-                new Film(10,
-                        "firstTestFilm",
-                        "firstTestFilmDescription",
-                        LocalDate.of(1900, 9, 19),
-                        160,
-                        null,
-                        new Mpa(1, "PG"),
-                        null,
-                        null
-                ));
+        Film firstTestFilm = filmStorage.create(Film.builder()
+                .name("firstTestFilm")
+                .description("firstTestFilmDescription")
+                .releaseDate(LocalDate.of(1900, 9, 19))
+                .duration(160)
+                .mpa(new Mpa(1, "PG"))
+                .build());
 
-        mockMvc.perform(put("/films/10/mark/10?mark=5"))
+        mockMvc.perform(put("/films/" + firstTestFilm.getId() + "/mark/" + firstTestUser.getId() + "?mark=5"))
                 .andExpect(status().isOk());
+
+        // сделать чтобы рейтинг перерассчитывался корректно - это убьет тесты из девелопа, не очковать)
+        assertEquals(filmStorage.get(firstTestFilm.getId()).get().getRate(), 5.0);
     }
 
     @Test
