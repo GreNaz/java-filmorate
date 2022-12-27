@@ -11,7 +11,11 @@ public interface UserStorage {
 
     User update(User user);
 
-    List<User> getUsers();
+    List<User> get();
 
     Optional<User> get(Long id);
+
+    void delete(Long id);
+
+    List<Long> geSimilar(Long userId);
 }

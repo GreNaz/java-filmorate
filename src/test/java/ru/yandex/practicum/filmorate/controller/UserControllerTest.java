@@ -137,7 +137,7 @@ public class UserControllerTest {
                         put("/users/1/friends/2")
                 )
                 .andExpect(status().isOk())
-                .andExpect(result -> assertEquals(2, friendStorage.getFriends(1L).get(0).getId()));
+                .andExpect(result -> assertEquals(2, friendStorage.get(1L).get(0).getId()));
 
     }
 
@@ -154,24 +154,24 @@ public class UserControllerTest {
     @Test
     void removeFriendsTest() throws Exception {
         userStorage.create(USER_2);
-        friendStorage.addFriend(2L, 1L);
+        friendStorage.add(2L, 1L);
 
         mockMvc.perform(
                         delete("/users/2/friends/1")
                 )
                 .andExpect(status().isOk())
-                .andExpect(result -> assertEquals(0, friendStorage.getFriends(2L).size()));
+                .andExpect(result -> assertEquals(0, friendStorage.get(2L).size()));
     }
 
     @Test
     void getFriendsListByIdTest() throws Exception {
-        friendStorage.addFriend(1L, 2L);
+        friendStorage.add(1L, 2L);
 
         mockMvc.perform(
                         get("/users/1/friends")
                 )
                 .andExpect(status().isOk())
-                .andExpect(result -> assertEquals(1, friendStorage.getFriends(1L).size()));
-        friendStorage.deleteFriend(1L, 2L);
+                .andExpect(result -> assertEquals(1, friendStorage.get(1L).size()));
+        friendStorage.delete(1L, 2L);
     }
 }

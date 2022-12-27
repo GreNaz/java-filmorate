@@ -24,7 +24,7 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public List<User> getUsers() {
+    public List<User> get() {
         String sql = "select * from USERS";
         return jdbcTemplate.query(sql, Mapper::userMapper);
     }
@@ -74,5 +74,23 @@ public class UserDbStorage implements UserStorage {
             return Optional.empty();
         }
         return Optional.ofNullable(jdbcTemplate.queryForObject(sql, Mapper::userMapper, id));
+    }
+
+    @Override
+    public void delete(Long id) {
+        final String deleteUser = "DELETE FROM users WHERE user_id = ?";
+        jdbcTemplate.update(deleteUser, id);
+    }
+
+    @Override
+    public List<Long> geSimilar(Long userId) {
+        String sql = "SELECT FL2.USER_ID\n" +
+                "FROM FILMS_LIKES AS FL1\n" +
+                "         JOIN FILMS_LIKES AS FL2 ON FL1.FILM_ID = FL2.FILM_ID\n" +
+                "WHERE FL1.USER_ID = ?\n" +
+                "  AND FL1.USER_ID <> FL2.USER_ID\n" +
+                "GROUP BY FL1.USER_ID, FL2.USER_ID\n" +
+                "ORDER BY count(FL1.FILM_ID) DESC";
+        return jdbcTemplate.queryForList(sql, Long.class, userId);
     }
 }
