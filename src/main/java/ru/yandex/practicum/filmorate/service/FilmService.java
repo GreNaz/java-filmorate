@@ -90,33 +90,6 @@ public class FilmService {
         return films;
     }
 
-    public Film createLike(Long filmId, Long userId) {
-        log.info("Adding a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
-        likeStorage.create(filmId, userId);
-        Event event = new Event(userId, EventType.LIKE, EventOperation.ADD, filmId);
-        eventStorage.create(event);
-        log.info("Added the 'Like' event.");
-        updateFilmRate(filmId);
-        return get(filmId);
-    }
-
-    private void updateFilmRate(Long filmId) {
-        Film film = filmStorage.get(filmId).orElseThrow(() ->
-                new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(likeStorage.getRate(filmId));
-        log.info("The rating of the film {} has been updated", filmId);
-    }
-
-    public Film removeLike(Long filmId, Long userId) {
-        log.info("Removing a like to a movie with an id = {} from a user with an id = {}", filmId, userId);
-        likeStorage.delete(filmId, userId);
-        Event event = new Event(userId, EventType.LIKE, EventOperation.REMOVE, filmId);
-        eventStorage.create(event);
-        log.info("Added the 'Delete Like' event.");
-        updateFilmRate(filmId);
-        return get(filmId);
-    }
-
     public Film create(Film film) {
         log.info("Making a film {}", film);
         mpaStorage.load(film);

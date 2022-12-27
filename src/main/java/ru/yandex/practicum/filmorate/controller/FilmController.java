@@ -38,13 +38,6 @@ public class FilmController {
         return filmService.update(film);
     }
 
-    @PutMapping("/{filmId}/like/{userId}")
-    public Film createLike(@PathVariable Long filmId,
-                           @PathVariable Long userId) {
-        log.info("Received a request to add like to film with id: {}", filmId);
-        return filmService.createLike(filmId, userId);
-    }
-
     @GetMapping
     public List<Film> get() {
         log.info("Received a request to get all films");
@@ -61,13 +54,6 @@ public class FilmController {
     public List<Film> getPopular(@RequestParam(defaultValue = "10") @Positive int count) {
         log.info("Received a request to get list of {} popular films", count);
         return filmService.getPopular(count);
-    }
-
-    @DeleteMapping("/{filmId}/like/{userId}")
-    public Film removeLike(@PathVariable Long filmId,
-                           @PathVariable Long userId) {
-        log.info("Received a request to remove like from film with an id: {}", filmId);
-        return filmService.removeLike(filmId, userId);
     }
 
     @GetMapping("/common")

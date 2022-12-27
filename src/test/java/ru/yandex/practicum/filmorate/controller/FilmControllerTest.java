@@ -179,18 +179,18 @@ public class FilmControllerTest {
                 .andExpect(result -> assertEquals(filmStorage.getPopular(2).get(1).getName(), "Film"));
     }
 
-    @Test
-    void commonFilmsTest() throws Exception {
-
-        filmStorage.create(FILM);
-        filmService.createLike(1L, 1L);
-        filmService.createLike(1L, 2L);
-        mockMvc.perform(
-                        get("/films/common")
-                )
-                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).size(), 1))
-                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getId(), 1))
-                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getName(), "Film"))
-                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getDescription(), "good film"));
-    }
+//    @Test
+//    void commonFilmsTest() throws Exception {
+//
+//        filmStorage.create(FILM);
+//        filmService.createLike(1L, 1L);
+//        filmService.createLike(1L, 2L);
+//        mockMvc.perform(
+//                        get("/films/common")
+//                )
+//                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).size(), 1))
+//                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getId(), 1))
+//                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getName(), "Film"))
+//                .andExpect(result -> assertEquals(filmService.commonFilms(1L, 2L).get(0).getDescription(), "good film"));
+//    }
 }

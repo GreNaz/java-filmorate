@@ -11,40 +11,41 @@ import javax.validation.constraints.Positive;
 
 @Repository
 @RequiredArgsConstructor
+
 public class LikeDbStorage implements LikeStorage {
 
-    private final JdbcTemplate jdbcTemplate;
-
-    @Override
-    public void delete(Long filmId, Long userId) {
-        String sql = "DELETE FROM films_likes " +
-                "WHERE film_id = ? AND user_id = ?";
-
-        int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
-
-        if (resultUpdate == 0) {
-            throw new ObjectNotFoundException("Not found film or user");
-        }
-    }
-
-    @Override
-    public void create(Long filmId, Long userId) {
-        String sql = "MERGE INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
-
-        int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
-        if (resultUpdate == 0) {
-            throw new ObjectNotFoundException("Not found film or user");
-        }
-    }
-
-    @Override
-    public Double getRate(Long filmId) {
-        String sql = "SELECT COUNT(*) FROM films_likes WHERE film_id = ?";
-        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
-        if (!filmRows.next()) {
-            return 0.0;
-        } else {
-            return jdbcTemplate.queryForObject(sql, Double.class, filmId);
-        }
-    }
+//    private final JdbcTemplate jdbcTemplate;
+//
+//    @Override
+//    public void delete(Long filmId, Long userId) {
+//        String sql = "DELETE FROM films_likes " +
+//                "WHERE film_id = ? AND user_id = ?";
+//
+//        int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
+//
+//        if (resultUpdate == 0) {
+//            throw new ObjectNotFoundException("Not found film or user");
+//        }
+//    }
+//
+//    @Override
+//    public void create(Long filmId, Long userId) {
+//        String sql = "MERGE INTO FILMS_LIKES (FILM_ID, USER_ID) VALUES (?, ?)";
+//
+//        int resultUpdate = jdbcTemplate.update(sql, filmId, userId);
+//        if (resultUpdate == 0) {
+//            throw new ObjectNotFoundException("Not found film or user");
+//        }
+//    }
+//
+//    @Override
+//    public Double getRate(Long filmId) {
+//        String sql = "SELECT COUNT(*) FROM films_likes WHERE film_id = ?";
+//        SqlRowSet filmRows = jdbcTemplate.queryForRowSet(sql, filmId);
+//        if (!filmRows.next()) {
+//            return 0.0;
+//        } else {
+//            return jdbcTemplate.queryForObject(sql, Double.class, filmId);
+//        }
+//    }
 }

@@ -18,8 +18,9 @@ public class MarkService {
     //Добавление новой оценки или обновление существующей
     public Film create(Long filmId, Long userId, int mark) {
         marksStorage.create(filmId, userId, mark);
+        Film film = filmStorage.get(filmId).get();
         updateFilmRate(filmId);
-        return filmStorage.get(filmId).get();
+        return film;
     }
 
     private void updateFilmRate(Long filmId) {

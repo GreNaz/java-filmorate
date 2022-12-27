@@ -32,7 +32,7 @@ public class EventStorageTest {
     void getListEventsTest() throws Exception {
         filmStorage.create(FILM);
         userService.addFriend(1L, 2L);
-        filmService.createLike(1L, 1L);
+//        filmService.createLike(1L, 1L);
         userService.getEvents(1L);
         mockMvc.perform(
                         get("/users/1/feed")
