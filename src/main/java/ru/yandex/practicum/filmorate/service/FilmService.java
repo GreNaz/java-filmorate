@@ -5,20 +5,24 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.AlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.dictionary.EventOperation;
 import ru.yandex.practicum.filmorate.model.dictionary.FilmSearchBy;
 import ru.yandex.practicum.filmorate.model.dictionary.FilmSortBy;
-import ru.yandex.practicum.filmorate.storage.director.DirectorStorage;
-import ru.yandex.practicum.filmorate.storage.event.EventStorage;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
-import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.marks.MarksStorage;
-import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.MarksStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Responsible for operations with films, - adding and removing likes,
@@ -99,7 +103,7 @@ public class FilmService {
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(marksStorage.getMarks(filmId));
+        film.setRate(likeStorage.getCount(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
@@ -185,17 +189,5 @@ public class FilmService {
         List<Film> filmByYearAndGenre = filmStorage.getPopularByYearAndGenre(year, genreId);
         genreStorage.load(filmByYearAndGenre);
         return filmByYearAndGenre;
-    }
-
-    public void addMarks(Long filmId, Long userId, Integer mark) {
-        marksStorage.addMarks(filmId, userId, mark);
-    }
-
-    public void deleteMarks(Long filmId, Long userId) {
-        marksStorage.deleteMarks(filmId, userId);
-    }
-
-    public String getMarksByFilm(Long filmId) {
-         return String.format("%.1f",marksStorage.getMarks(filmId));
     }
 }

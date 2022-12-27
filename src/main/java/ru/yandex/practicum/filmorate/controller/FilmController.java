@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.model.dictionary.FilmSortBy;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.Positive;
 import java.util.Arrays;
@@ -46,28 +45,8 @@ public class FilmController {
         return filmService.createLike(filmId, userId);
     }
 
-    @PutMapping("/{filmId}/mark/{userId}")
-    public void createMark(@PathVariable Long filmId,
-                           @PathVariable Long userId,
-                           @RequestParam @Max(10) @Min(1) Integer mark) {
-        log.info("Received a request to add mark to film with id: {} ", filmId);
-        filmService.addMarks(filmId, userId, mark);
-    }
-
-    @GetMapping("/mark/{filmId}")
-    public String getMarkByFilm(@PathVariable Long filmId) {
-        log.info("Received a request to get mark by film {} ", filmId);
-        return filmService.getMarksByFilm(filmId);
-    }
-
-    @DeleteMapping("/{filmId}/mark/{userId}")
-    public void deleteMark(@PathVariable Long filmId,
-                           @PathVariable Long userId) {
-        filmService.deleteMarks(filmId,userId);
-    }
-
     @GetMapping
-    public List<Film> getAll() {
+    public List<Film> get() {
         log.info("Received a request to get all films");
         return filmService.getFilms();
     }
