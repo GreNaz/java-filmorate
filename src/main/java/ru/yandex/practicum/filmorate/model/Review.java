@@ -9,9 +9,9 @@ import javax.validation.constraints.*;
 @Getter
 @Setter
 @ToString
-@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @AllArgsConstructor
-public class Review {
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public class Review  {
     @EqualsAndHashCode.Include
     @NotNull(groups = Update.class)
     private Long reviewId;

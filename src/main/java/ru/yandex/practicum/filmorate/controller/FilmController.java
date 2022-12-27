@@ -45,6 +45,14 @@ public class FilmController {
         return filmService.createLike(filmId, userId);
     }
 
+    @PutMapping("/{filmId}/mark/{userId}")
+    public void createMark(@PathVariable Long filmId,
+                           @PathVariable Long userId,
+                           @RequestParam Integer mark) {
+        log.info("Received a request to add mark to film with id: {} ", filmId);
+      filmService.addMarks(filmId, userId, mark);
+    }
+
     @GetMapping
     public List<Film> getAll() {
         log.info("Received a request to get all films");

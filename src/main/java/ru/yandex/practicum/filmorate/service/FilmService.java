@@ -14,6 +14,7 @@ import ru.yandex.practicum.filmorate.storage.event.EventStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.likes.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.marks.MarksStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 
 import java.util.*;
@@ -34,6 +35,7 @@ public class FilmService {
     private final LikeStorage likeStorage;
     private final DirectorStorage directorStorage;
     private final EventStorage eventStorage;
+    private final MarksStorage marksStorage;
 
 
     public List<Film> getFilmsByDirectorWithSort(int id, FilmSortBy sortType) {
@@ -183,5 +185,21 @@ public class FilmService {
         List<Film> filmByYearAndGenre = filmStorage.getPopularByYearAndGenre(year, genreId);
         genreStorage.load(filmByYearAndGenre);
         return filmByYearAndGenre;
+    }
+
+    public void addMarks(Long filmId, Long userId, Integer mark) {
+        boolean isPositive = true;
+        if(mark <= 4) {
+            isPositive = false;
+        }
+        marksStorage.addMarks(filmId, userId, isPositive);
+    }
+
+    public void deleteMarks(Long userId) {
+        marksStorage.deleteMarks(userId);
+    }
+
+    public Double getMarksByFilm(Long filmId) {
+        return marksStorage.getMarks(filmId);
     }
 }
