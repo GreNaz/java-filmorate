@@ -3,6 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.MarksStorage;
 
 @Slf4j
@@ -10,10 +13,19 @@ import ru.yandex.practicum.filmorate.storage.MarksStorage;
 @RequiredArgsConstructor
 public class MarkService {
     private final MarksStorage marksStorage;
+    private final FilmStorage filmStorage;
 
     //Добавление новой оценки или обновление существующей
     public void create(Long filmId, Long userId, int mark) {
         marksStorage.create(filmId, userId, mark);
+        updateFilmRate(filmId);
+    }
+
+    private void updateFilmRate(Long filmId) {
+        Film film = filmStorage.get(filmId).orElseThrow(() ->
+                new ObjectNotFoundException("Updated error, film not found"));
+        film.setRate(marksStorage.get(filmId));
+        log.info("The rating of the film {} has been updated", filmId);
     }
 
     public void delete(Long filmId, Long userId) {
@@ -21,6 +33,6 @@ public class MarkService {
     }
 
     public String getByFilm(Long filmId) {
-        return String.format("%.1f", marksStorage.getByFilm(filmId));
+        return String.format("%.1f", marksStorage.get(filmId));
     }
 }

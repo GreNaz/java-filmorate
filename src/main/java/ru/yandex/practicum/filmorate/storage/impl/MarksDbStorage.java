@@ -32,11 +32,12 @@ public class MarksDbStorage implements MarksStorage {
     }
 
     @Override
-    public double getByFilm(Long filmId) {
+    public double get(Long filmId) {
         final String getMarks = "SELECT AVG(MARK)/COUNT(*) " +
                 "FROM MARKS m " +
                 "LEFT JOIN FILMS f ON f.film_id = m.film_id " +
                 "WHERE f.film_id = ? ";
+
         return jdbcTemplate.queryForObject(getMarks, Double.class, filmId);
     }
 

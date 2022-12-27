@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.MarksStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -34,10 +35,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class MarkControllerTest {
 
     private final FilmStorage filmStorage;
+    private final MarksStorage marksStorage;
     private final UserStorage userStorage;
     private final MockMvc mockMvc;
-    private final ObjectMapper objectMapper;
-    private final FilmService filmService;
 
     @Test
     @Order(1)
@@ -61,8 +61,12 @@ class MarkControllerTest {
         mockMvc.perform(put("/films/" + firstTestFilm.getId() + "/mark/" + firstTestUser.getId() + "?mark=5"))
                 .andExpect(status().isOk());
 
-        // сделать чтобы рейтинг перерассчитывался корректно - это убьет тесты из девелопа, не очковать)
+        //проверка что рейтинг в базе пересчитывается корректно
+        assertEquals(marksStorage.get(firstTestFilm.getId()), 5.0);
+        //проверка что рейтинг при получении фильма пересчитывется корректно
         assertEquals(filmStorage.get(firstTestFilm.getId()).get().getRate(), 5.0);
+
+
     }
 
     @Test

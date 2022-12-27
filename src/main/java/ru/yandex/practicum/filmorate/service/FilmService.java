@@ -103,7 +103,7 @@ public class FilmService {
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film not found"));
-        film.setRate(likeStorage.getCount(filmId));
+        film.setRate(marksStorage.get(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
