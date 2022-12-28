@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.service.MarkService;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 @Slf4j
 @Validated
@@ -30,5 +31,17 @@ public class MarkController {
     public void delete(@PathVariable Long filmId,
                        @PathVariable Long userId) {
         markService.delete(filmId, userId);
+    }
+
+    @GetMapping("{filmId}/mark")
+    public String getMarkByFilm(@PathVariable Long filmId) {
+        log.info("Received a request to get mark from a movie {} ", filmId);
+        return String.format("%.1f", markService.getByFilm(filmId));
+    }
+
+    @GetMapping("/mark/{userId}")
+    public List<Film> getMarksByUser(@PathVariable Long userId) {
+        log.info("Received a request to get a list marks by user {}", userId);
+        return markService.getMarksByUser(userId);
     }
 }

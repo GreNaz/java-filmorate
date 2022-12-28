@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.MarksStorage;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,19 +25,25 @@ public class MarkService {
 
     public void delete(Long filmId, Long userId) {
         marksStorage.delete(filmId, userId);
+        updateFilmRate(filmId);
         log.info("The rating of the film {} has been deleted", filmId);
     }
 
     private Film updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film with id " + filmId + " not found"));
-        film.setRate(marksStorage.getRate(filmId).get());
+        film.setRate(marksStorage.getRate(filmId));
         log.info("The rating of the film {} has been updated", filmId);
         return film;
 
     }
 
-//    public String getByFilm(Long filmId) {
-//        return String.format("%.1f", marksStorage.getRate(filmId));
-//    }
+    public Double getByFilm(Long filmId) {
+        return marksStorage.getRate(filmId);
+    }
+
+    public List<Film> getMarksByUser(Long userId) {
+        log.info("A list of ratings that the user has set has been received");
+        return marksStorage.getMarksByUser(userId);
+    }
 }

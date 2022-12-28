@@ -145,16 +145,9 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getPopular(int count) {
 
-        String sql = "SELECT films.FILM_ID, films.name, description, release_date, duration, rate, m.mpa_id, m.name " +
-                "FROM films " +
-                "LEFT JOIN films_likes fl ON films.FILM_ID = fl.film_id " +
-                "LEFT JOIN mpa m on m.MPA_ID = films.mpa_id " +
-                "GROUP BY films.FILM_ID, fl.film_id IN ( " +
-                "SELECT film_id " +
-                "FROM films_likes " +
-                ") " +
-                "ORDER BY COUNT(fl.film_id) DESC " +
-                "LIMIT ?";
+        String sql = "SELECT * " +
+                "FROM FILMS " +
+                "ORDER BY RATE DESC";
 
         return jdbcTemplate.query(sql, Mapper::filmMapper, count);
     }
@@ -266,7 +259,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE d.director_id = ? " +
                 "GROUP BY films.film_id " +
                 "ORDER BY " + sortType;
-        
+
         List<Film> films = jdbcTemplate.query(getFilmByDirector, Mapper::filmMapper, id);
         if (films.isEmpty()) {
             throw new ObjectNotFoundException("Film with director id " + id + " not found");

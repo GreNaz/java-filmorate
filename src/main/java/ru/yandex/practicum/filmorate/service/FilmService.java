@@ -121,9 +121,7 @@ public class FilmService {
                 () -> new AlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.load(Collections.singletonList(film));
         directorStorage.load(Collections.singletonList(film));
-        film.setRate(marksStorage.getRate(id).orElseThrow(()
-                -> new ObjectNotFoundException("Error in process calculate rate")));
-
+        film.setRate(marksStorage.getRate(id));
         return film;
     }
 

@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.model.Film;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface MarksStorage {
@@ -8,7 +11,8 @@ public interface MarksStorage {
 
     void delete(Long filmId, Long userId);
 
-    Optional<Double> getRate(Long filmId);
+    Double getRate(Long filmId);
 
-//    List<Mark> getByUser(Long userId);
+    List<Film> getMarksByUser(Long userId);
+
 }
