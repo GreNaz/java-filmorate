@@ -6,14 +6,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.dictionary.EventOperation;
 import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.recommendation.InputData;
+import ru.yandex.practicum.filmorate.storage.recommendation.SlopeOne;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Responsible for such operations with users,
@@ -31,6 +34,7 @@ public class UserService {
     private final FilmStorage filmStorage;
     private final GenreStorage genreStorage;
     private final DirectorStorage directorStorage;
+    private final MarksStorage marksStorage;
 
     public User addFriend(Long fromUser, Long toUser) {
         log.info("Adding a user with an id = {}, as a friend to a user with an id = {}", toUser, fromUser);
@@ -106,6 +110,9 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(Long id, int count) {
+        InputData inputData = new InputData(userStorage, filmStorage, marksStorage);
+        SlopeOne slopeOne = new SlopeOne(filmStorage, inputData);
+        slopeOne.slopeOne();
         List<Long> similarInterestUsers = userStorage.geSimilar(id);
 
         if (similarInterestUsers.isEmpty()) {

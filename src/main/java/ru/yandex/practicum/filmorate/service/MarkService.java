@@ -42,7 +42,7 @@ public class MarkService {
         return marksStorage.getRate(filmId);
     }
 
-    public List<Film> getMarksByUser(Long userId) {
+    public List<Film> getByUser(Long userId) {
         log.info("A list of ratings that the user has set has been received");
         return marksStorage.getMarksByUser(userId);
     }

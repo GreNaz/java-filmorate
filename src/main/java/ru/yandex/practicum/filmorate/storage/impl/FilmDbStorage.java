@@ -162,12 +162,12 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getCommon(Long userId, Long friendId) {
 
         String sql = "SELECT f2.*, M.*\n" +
-                "FROM FILMS_LIKES\n" +
-                "join FILMS_LIKES f ON f.FILM_ID = FILMS_LIKES.FILM_ID\n" +
+                "FROM FILM_MARKS \n" +
+                "join FILM_MARKS f ON f.FILM_ID = FILM_MARKS.FILM_ID\n" +
                 "LEFT JOIN films f2 on f2.film_id = f.film_id\n" +
                 "join MPA M on f2.mpa_id = M.MPA_ID\n" +
                 "WHERE f.USER_ID = ?\n" +
-                "AND FILMS_LIKES.USER_ID = ?" +
+                "AND FILM_MARKS.USER_ID = ?" +
                 "ORDER BY RATE;";
         return jdbcTemplate.query(sql, Mapper::filmMapper, userId, friendId);
     }
@@ -175,7 +175,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularByYear(int year) {
         final String getPopularFilmByYear = "SELECT * " +
                 "FROM films " +
-                "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
+                "LEFT JOIN FILM_MARKS fl ON films.film_id = fl.film_id " +
                 "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
                 "WHERE EXTRACT(YEAR FROM release_date) = ? " +
                 "GROUP BY films.film_id, fl.film_id " +
@@ -189,7 +189,7 @@ public class FilmDbStorage implements FilmStorage {
                 "FROM FILMS " +
                 "LEFT JOIN FILM_GENRE FG ON FILMS.FILM_ID = FG.FILM_ID " +
                 "LEFT JOIN GENRE G ON FG.GENRE_ID = G.GENRE_ID " +
-                "LEFT JOIN FILMS_LIKES FL ON FILMS.FILM_ID = FL.FILM_ID " +
+                "LEFT JOIN FILM_MARKS FL ON FILMS.FILM_ID = FL.FILM_ID " +
                 "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
                 "WHERE G.GENRE_ID = ? " +
                 "GROUP BY FILMS.FILM_ID " +
@@ -201,7 +201,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getPopularByYearAndGenre(int year, int genreId) {
         final String getPopularFilmByYearAndGenre = "SELECT * " +
                 "FROM films " +
-                "LEFT JOIN films_likes fl ON films.film_id = fl.film_id " +
+                "LEFT JOIN FILM_MARKS fl ON films.film_id = fl.film_id " +
                 "LEFT JOIN MPA M ON FILMS.MPA_ID = M.MPA_ID " +
                 "LEFT JOIN FILM_GENRE FG ON FILMS.FILM_ID = FG.FILM_ID " +
                 "LEFT JOIN GENRE G ON FG.GENRE_ID = G.GENRE_ID " +
@@ -216,11 +216,11 @@ public class FilmDbStorage implements FilmStorage {
     public List<Long> getIdOfCommon(List<Long> usersId, Long userId, int count) {
 
         String sql = "SELECT DISTINCT fl_1.film_id " +
-                "FROM films_likes AS fl_1 " +
+                "FROM FILM_MARKS AS fl_1 " +
                 "WHERE fl_1.user_id IN (:usersId) " +
                 "EXCEPT " +
                 "SELECT fl_2.film_id " +
-                "FROM films_likes AS fl_2 " +
+                "FROM FILM_MARKS AS fl_2 " +
                 "WHERE fl_2.user_id = :userId " +
                 "LIMIT :count";
 

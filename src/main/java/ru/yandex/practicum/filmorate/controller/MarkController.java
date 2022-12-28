@@ -34,14 +34,14 @@ public class MarkController {
     }
 
     @GetMapping("{filmId}/mark")
-    public String getMarkByFilm(@PathVariable Long filmId) {
+    public String getByFilm(@PathVariable Long filmId) {
         log.info("Received a request to get mark from a movie {} ", filmId);
         return String.format("%.1f", markService.getByFilm(filmId));
     }
 
     @GetMapping("/mark/{userId}")
-    public List<Film> getMarksByUser(@PathVariable Long userId) {
+    public List<Film> getByUser(@PathVariable Long userId) {
         log.info("Received a request to get a list marks by user {}", userId);
-        return markService.getMarksByUser(userId);
+        return markService.getByUser(userId);
     }
 }

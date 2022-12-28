@@ -15,4 +15,5 @@ public interface MarksStorage {
 
     List<Film> getMarksByUser(Long userId);
 
+    Double getMarkByUser(Long userId, Long filmId);
 }
