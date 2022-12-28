@@ -80,7 +80,8 @@ public class FilmController {
     public List<Film> getBy(@RequestParam String query,
                             @RequestParam String by) {
         log.info("Received a request to search list of popular films with substring {} and with director/title {}", query, by);
-        Set<FilmSearchBy> filteredBy = Arrays.stream(by.split(",")).map(FilmSearchBy::valueOf).collect(Collectors.toSet());
+        Set<FilmSearchBy> filteredBy = Arrays.stream(by.split(","))
+                .map(FilmSearchBy::valueOf).collect(Collectors.toSet());
 
         return filmService.getByDirector(query, filteredBy);
     }

@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.LikeService;
 
 @Slf4j
 @Validated
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 @RequestMapping("/films")
 public class LikeController {
     private final FilmService filmService;
+    private final LikeService likeService;
 
 
 //    @PutMapping("/{filmId}/like/{userId}")

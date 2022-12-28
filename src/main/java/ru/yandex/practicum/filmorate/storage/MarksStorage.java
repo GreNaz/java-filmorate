@@ -12,5 +12,5 @@ public interface MarksStorage {
 
     double getRate(Long filmId);
 
-    List<Mark> getByUser(Long userId);
+//    List<Mark> getByUser(Long userId);
 }

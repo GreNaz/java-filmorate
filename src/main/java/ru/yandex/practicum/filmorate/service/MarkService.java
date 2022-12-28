@@ -17,24 +17,26 @@ public class MarkService {
 
     //Добавление новой оценки или обновление существующей
     public Film create(Long filmId, Long userId, int mark) {
+        Film film = filmStorage.get(filmId).orElseThrow(()
+                -> new ObjectNotFoundException("Film with id " + filmId + " not found"));
         marksStorage.create(filmId, userId, mark);
-        Film film = filmStorage.get(filmId).get();
         updateFilmRate(filmId);
         return film;
     }
 
+    public void delete(Long filmId, Long userId) {
+        marksStorage.delete(filmId, userId);
+        log.info("The rating of the film {} has been deleted", filmId);
+    }
+
     private void updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
-                new ObjectNotFoundException("Updated error, film not found"));
+                new ObjectNotFoundException("Updated error, film with id " + filmId + " not found"));
         film.setRate(marksStorage.getRate(filmId));
         log.info("The rating of the film {} has been updated", filmId);
     }
 
-    public void delete(Long filmId, Long userId) {
-        marksStorage.delete(filmId, userId);
-    }
-
-    public String getByFilm(Long filmId) {
-        return String.format("%.1f", marksStorage.getRate(filmId));
-    }
+//    public String getByFilm(Long filmId) {
+//        return String.format("%.1f", marksStorage.getRate(filmId));
+//    }
 }

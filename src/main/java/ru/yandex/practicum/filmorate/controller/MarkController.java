@@ -25,11 +25,11 @@ public class MarkController {
         markService.create(filmId, userId, mark);
     }
 
-    @GetMapping("/mark/{filmId}")
-    public String get(@PathVariable Long filmId) {
-        log.info("Received a request to get mark by film {} ", filmId);
-        return markService.getByFilm(filmId);
-    }
+//    @GetMapping("/mark/{filmId}")
+//    public String get(@PathVariable Long filmId) {
+//        log.info("Received a request to get mark by film {} ", filmId);
+//        return markService.getByFilm(filmId);
+//    }
 
     @DeleteMapping("/{filmId}/mark/{userId}")
     public void delete(@PathVariable Long filmId,
