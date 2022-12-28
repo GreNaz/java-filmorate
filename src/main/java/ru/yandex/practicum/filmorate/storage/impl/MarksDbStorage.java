@@ -4,10 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
-import ru.yandex.practicum.filmorate.model.Mark;
 import ru.yandex.practicum.filmorate.storage.MarksStorage;
 
-import java.util.List;
+import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
@@ -32,23 +31,13 @@ public class MarksDbStorage implements MarksStorage {
     }
 
     @Override
-    public double getRate(Long filmId) {
+    public Optional<Double> getRate(Long filmId) {
         final String getMarks = "SELECT AVG(MARK)/COUNT(*) " +
                 "FROM FILM_MARKS m " +
                 "LEFT JOIN FILMS f ON f.film_id = m.film_id " +
                 "WHERE f.film_id = ? ";
 
-        return jdbcTemplate.queryForObject(getMarks, Double.class, filmId);
+        return Optional.ofNullable(jdbcTemplate.queryForObject(getMarks, Double.class, filmId));
     }
-
-//    @Override
-//    public List<Mark> getByUser(Long userId) {
-//        final String getMarkByUser = "SELECT *\n" +
-//                "FROM MARKS\n" +
-//                "LEFT JOIN USERS U on MARKS.USER_ID = U.USER_ID\n" +
-//                "WHERE u.USER_ID = 2\n" +
-//                "ORDER BY (IS_POSITIVE = true)";
-//        return List.of();
-//    }
 }
 

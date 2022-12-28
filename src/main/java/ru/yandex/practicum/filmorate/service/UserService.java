@@ -109,7 +109,7 @@ public class UserService {
     }
 
     public List<Film> getRecommendations(Long id, int count) {
-
+//TODO: передаелать
         List<Long> similarInterestUsers = userStorage.geSimilar(id);
 
         if (similarInterestUsers.isEmpty()) {

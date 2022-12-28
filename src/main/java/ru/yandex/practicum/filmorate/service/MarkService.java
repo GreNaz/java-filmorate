@@ -17,11 +17,8 @@ public class MarkService {
 
     //Добавление новой оценки или обновление существующей
     public Film create(Long filmId, Long userId, int mark) {
-        Film film = filmStorage.get(filmId).orElseThrow(()
-                -> new ObjectNotFoundException("Film with id " + filmId + " not found"));
         marksStorage.create(filmId, userId, mark);
-        updateFilmRate(filmId);
-        return film;
+        return updateFilmRate(filmId);
     }
 
     public void delete(Long filmId, Long userId) {
@@ -29,11 +26,13 @@ public class MarkService {
         log.info("The rating of the film {} has been deleted", filmId);
     }
 
-    private void updateFilmRate(Long filmId) {
+    private Film updateFilmRate(Long filmId) {
         Film film = filmStorage.get(filmId).orElseThrow(() ->
                 new ObjectNotFoundException("Updated error, film with id " + filmId + " not found"));
-        film.setRate(marksStorage.getRate(filmId));
+        film.setRate(marksStorage.getRate(filmId).get());
         log.info("The rating of the film {} has been updated", filmId);
+        return film;
+
     }
 
 //    public String getByFilm(Long filmId) {

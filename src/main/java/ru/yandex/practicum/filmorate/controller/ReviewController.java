@@ -21,8 +21,6 @@ import java.util.List;
 @RequestMapping("/reviews")
 public class ReviewController {
     private final ReviewService reviewService;
-    private final UserService userService;
-    private final FilmService filmService;
 
     @PostMapping
     public Review create(@Validated(Create.class)

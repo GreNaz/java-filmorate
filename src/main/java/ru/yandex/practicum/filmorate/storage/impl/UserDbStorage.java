@@ -85,12 +85,12 @@ public class UserDbStorage implements UserStorage {
     @Override
     public List<Long> geSimilar(Long userId) {
         String sql = "SELECT FL2.USER_ID\n" +
-                "FROM FILMS_LIKES AS FL1\n" +
-                "         JOIN FILMS_LIKES AS FL2 ON FL1.FILM_ID = FL2.FILM_ID\n" +
-                "WHERE FL1.USER_ID = ?\n" +
-                "  AND FL1.USER_ID <> FL2.USER_ID\n" +
-                "GROUP BY FL1.USER_ID, FL2.USER_ID\n" +
-                "ORDER BY count(FL1.FILM_ID) DESC";
+                "FROM FILM_MARKS AS FM\n" +
+                "         JOIN FILM_MARKS AS FM2 ON FM.FILM_ID = FM2.FILM_ID\n" +
+                "WHERE FM.USER_ID = ?\n" +
+                "  AND FM.USER_ID <> FM2.USER_ID\n" +
+                "GROUP BY FM.USER_ID, FM2.USER_ID\n" +
+                "ORDER BY count(FM.FILM_ID) DESC";
         return jdbcTemplate.queryForList(sql, Long.class, userId);
     }
 }

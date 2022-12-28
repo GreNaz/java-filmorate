@@ -111,6 +111,7 @@ public class FilmService {
         List<Film> films = filmStorage.get();
         genreStorage.load(films);
         directorStorage.load(films);
+        //тут как будто все фильмы без рейтинга возвращаются
         return films;
     }
 
@@ -120,9 +121,8 @@ public class FilmService {
                 () -> new AlreadyExistException("Film id = " + id + " was not found"));
         genreStorage.load(Collections.singletonList(film));
         directorStorage.load(Collections.singletonList(film));
-
-        //Для рефакторинга (странно что тут не было film.setRate(likeStorage.getRate(id)) )
-        film.setRate(marksStorage.getRate(id));
+        film.setRate(marksStorage.getRate(id).orElseThrow(()
+                -> new ObjectNotFoundException("Error in process calculate rate")));
 
         return film;
     }
