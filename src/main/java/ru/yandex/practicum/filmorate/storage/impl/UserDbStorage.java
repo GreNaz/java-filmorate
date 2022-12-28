@@ -84,13 +84,15 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<Long> geSimilar(Long userId) {
-        String sql = "SELECT FL2.USER_ID\n" +
+//        надо будет искать пользователей с похожими оценками одним и тем же фильмам.
+//        А рекомендовать только с положительной оценкой.
+        String sql = "SELECT FM2.USER_ID\n" +
                 "FROM FILM_MARKS AS FM\n" +
                 "         JOIN FILM_MARKS AS FM2 ON FM.FILM_ID = FM2.FILM_ID\n" +
                 "WHERE FM.USER_ID = ?\n" +
                 "  AND FM.USER_ID <> FM2.USER_ID\n" +
                 "GROUP BY FM.USER_ID, FM2.USER_ID\n" +
-                "ORDER BY count(FM.FILM_ID) DESC";
+                "ORDER BY count(FM.FILM_ID) DESC;";
         return jdbcTemplate.queryForList(sql, Long.class, userId);
     }
 }
