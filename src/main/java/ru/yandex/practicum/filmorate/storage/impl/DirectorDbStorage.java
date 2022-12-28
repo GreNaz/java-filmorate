@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 public class DirectorDbStorage implements DirectorStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
-    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
 
 
     @Override

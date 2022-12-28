@@ -92,7 +92,8 @@ public class UserDbStorage implements UserStorage {
                 "WHERE FM.USER_ID = ?\n" +
                 "  AND FM.USER_ID <> FM2.USER_ID\n" +
                 "GROUP BY FM.USER_ID, FM2.USER_ID\n" +
-                "ORDER BY count(FM.FILM_ID) DESC;";
+                "HAVING AVG(FM.MARK) > 5\n" +
+                "ORDER BY AVG(FM.MARK) DESC;";
         return jdbcTemplate.queryForList(sql, Long.class, userId);
     }
 }

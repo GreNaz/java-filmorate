@@ -21,6 +21,7 @@ public class MarksDbStorage implements MarksStorage {
     public void create(Long filmId, Long userId, int mark) {
         //мерждим чтобы была возможность изменить оценку
         String sql = "MERGE INTO FILM_MARKS (FILM_ID, USER_ID, MARK) VALUES (?, ?, ?)";
+
         final String setRate = "UPDATE FILMS SET RATE = ? WHERE FILM_ID = ?";
         jdbcTemplate.update(setRate, getRate(filmId), filmId);
         int resultUpdate = jdbcTemplate.update(sql, filmId, userId, mark);
