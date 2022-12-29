@@ -11,7 +11,6 @@ import java.util.LinkedHashSet;
 @Getter
 @Setter
 @ToString
-@Builder
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Film {
@@ -36,7 +35,7 @@ public class Film {
 
     @Positive
     @Builder.Default
-    private Double rate = 0.0;
+    private Double rate;
 
     @NotNull
     private Mpa mpa;

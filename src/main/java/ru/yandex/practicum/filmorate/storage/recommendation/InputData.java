@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.recommendation;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,15 +45,13 @@ public class InputData {
         for (User user : userStorage.get()) {
 
             List<Film> markedFilms = marksStorage.getMarksByUser(user.getId());
-
+            filmsWithMarks = new HashMap<>();
             for (Film markedFilm : markedFilms) {
                 filmsWithMarks.put(markedFilm, markedFilm.getRate());
             }
 
             data.put(user, filmsWithMarks);
         }
-
         return data;
     }
-
 }
