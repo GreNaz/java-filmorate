@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.recommendation;
 
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -15,28 +15,27 @@ import java.util.Map.Entry;
 /**
  * Slope One algorithm implementation
  */
+@Slf4j
 @RequiredArgsConstructor
 public class SlopeOne {
     private final FilmStorage filmStorage;
     private final InputData inp;
-    private Map<Film, Map<Film, Double>> diff = new HashMap<>();
-    private Map<Film, Map<Film, Integer>> freq = new HashMap<>();
-    private Map<User, HashMap<Film, Double>> inputData;
-    private Map<User, HashMap<Film, Double>> outputData = new HashMap<>();
-
+    private final Map<Film, Map<Film, Double>> diff = new HashMap<>();
+    private final Map<Film, Map<Film, Integer>> freq = new HashMap<>();
+    private final Map<User, HashMap<Film, Double>> outputData = new HashMap<>();
 
 
     public void slopeOne() {
-        inputData = inp.initializeData();
-        System.out.println("Slope One - Before the Prediction\n");
+        Map<User, HashMap<Film, Double>> inputData = inp.initializeData();
+        log.info("Slope One - Before the Prediction\n");
         buildDifferencesMatrix(inputData);
-        System.out.println("\nSlope One - With Predictions\n");
+        log.info("\nSlope One - With Predictions\n");
         predict(inputData);
     }
 
     /**
      * Based on the available data, calculate the relationships between the
-     * items and number of occurences
+     * items and number of occurrences
      *
      * @param data existing user data and their items' ratings
      */
@@ -50,11 +49,11 @@ public class SlopeOne {
                 for (Entry<Film, Double> e2 : user.entrySet()) {
                     int oldCount = 0;
                     if (freq.get(e.getKey()).containsKey(e2.getKey())) {
-                        oldCount = freq.get(e.getKey()).get(e2.getKey()).intValue();
+                        oldCount = freq.get(e.getKey()).get(e2.getKey());
                     }
                     double oldDiff = 0.0;
                     if (diff.get(e.getKey()).containsKey(e2.getKey())) {
-                        oldDiff = diff.get(e.getKey()).get(e2.getKey()).doubleValue();
+                        oldDiff = diff.get(e.getKey()).get(e2.getKey());
                     }
                     double observedDiff = e.getValue() - e2.getValue();
                     freq.get(e.getKey()).put(e2.getKey(), oldCount + 1);
@@ -64,8 +63,8 @@ public class SlopeOne {
         }
         for (Film j : diff.keySet()) {
             for (Film i : diff.get(j).keySet()) {
-                double oldValue = diff.get(j).get(i).doubleValue();
-                int count = freq.get(j).get(i).intValue();
+                double oldValue = diff.get(j).get(i);
+                int count = freq.get(j).get(i);
                 diff.get(j).put(i, oldValue / count);
             }
         }
@@ -89,10 +88,10 @@ public class SlopeOne {
             for (Film j : e.getValue().keySet()) {
                 for (Film k : diff.keySet()) {
                     try {
-                        double predictedValue = diff.get(k).get(j).doubleValue() + e.getValue().get(j).doubleValue();
-                        double finalValue = predictedValue * freq.get(k).get(j).intValue();
+                        double predictedValue = diff.get(k).get(j) + e.getValue().get(j);
+                        double finalValue = predictedValue * freq.get(k).get(j);
                         uPred.put(k, uPred.get(k) + finalValue);
-                        uFreq.put(k, uFreq.get(k) + freq.get(k).get(j).intValue());
+                        uFreq.put(k, uFreq.get(k) + freq.get(k).get(j));
                     } catch (NullPointerException e1) {
                     }
                 }
@@ -100,7 +99,7 @@ public class SlopeOne {
             HashMap<Film, Double> clean = new HashMap<>();
             for (Film j : uPred.keySet()) {
                 if (uFreq.get(j) > 0) {
-                    clean.put(j, uPred.get(j).doubleValue() / uFreq.get(j).intValue());
+                    clean.put(j, uPred.get(j) / uFreq.get(j));
                 }
             }
             for (Film j : filmStorage.get()) {
@@ -117,7 +116,7 @@ public class SlopeOne {
 
     private void printData(Map<User, HashMap<Film, Double>> data) {
         for (User user : data.keySet()) {
-            System.out.println(user.getName() + ":");
+            log.info("USER WITH LOGIN {} AND ID = {}: ", user.getLogin(), user.getId());
             print(data.get(user));
         }
     }
@@ -125,7 +124,8 @@ public class SlopeOne {
     private void print(HashMap<Film, Double> hashMap) {
         NumberFormat formatter = new DecimalFormat("#0.000");
         for (Film j : hashMap.keySet()) {
-            System.out.println(" " + j.getName() + " --> " + formatter.format(hashMap.get(j).doubleValue()));
+            log.info(" FILM WITH ID = {} IS RECOMMENDED IF VALUE > 0  --> {} ",
+                    j.getId(), formatter.format(hashMap.get(j).doubleValue()));
         }
     }
 

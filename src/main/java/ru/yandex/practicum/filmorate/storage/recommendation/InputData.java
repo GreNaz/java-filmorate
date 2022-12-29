@@ -30,17 +30,27 @@ public class InputData {
 
     public Map<User, HashMap<Film, Double>> initializeData() {
         Map<User, HashMap<Film, Double>> data = new HashMap<>();
-        HashMap<Film, Double> filmWithMark = new HashMap<>();
-        userStorage.get().stream()
-                .forEach(user -> {
-                    marksStorage.getMarksByUser(user.getId()).stream()
-                            .forEach(film -> {
-                                filmWithMark.put(
-                                        film,
-                                        marksStorage.getMarkByUser(user.getId(), film.getId()));
-                            });
-                    data.put(user, filmWithMark);
-                });
+        HashMap<Film, Double> filmsWithMarks = new HashMap<>();
+//        userStorage.get().stream()
+//                .forEach(user -> {
+//                    marksStorage.getMarksByUser(user.getId()).stream()
+//                            .forEach(film -> {
+//                                filmsWithMarks.put(
+//                                        film,
+//                                        marksStorage.getMarkByUser(user.getId(), film.getId()));
+//                            });
+//                    data.put(user, filmsWithMarks);
+//                });
+        for (User user : userStorage.get()) {
+
+            List<Film> markedFilms = marksStorage.getMarksByUser(user.getId());
+
+            for (Film markedFilm : markedFilms) {
+                filmsWithMarks.put(markedFilm, markedFilm.getRate());
+            }
+
+            data.put(user, filmsWithMarks);
+        }
 
         return data;
     }
