@@ -114,7 +114,8 @@ public class UserService {
         SlopeOne slopeOne = new SlopeOne(filmStorage, inputData);
         Map<User, HashMap<Film, Double>> data = slopeOne.slopeOne();
 
-        HashMap<Film, Double> recommendedFilms = data.get(userStorage.get(id).get());
+        HashMap<Film, Double> recommendedFilms = data.get(userStorage.get(id).orElseThrow(()
+                -> new ObjectNotFoundException("User with id " + id + " not found")));
 
         List<Film> films = new ArrayList<>();
 
