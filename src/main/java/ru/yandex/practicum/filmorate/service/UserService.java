@@ -15,8 +15,8 @@ import ru.yandex.practicum.filmorate.storage.*;
 import ru.yandex.practicum.filmorate.storage.recommendation.InputData;
 import ru.yandex.practicum.filmorate.storage.recommendation.SlopeOne;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Responsible for such operations with users,
@@ -112,15 +112,17 @@ public class UserService {
     public List<Film> getRecommendations(Long id, int count) {
         InputData inputData = new InputData(userStorage, filmStorage, marksStorage);
         SlopeOne slopeOne = new SlopeOne(filmStorage, inputData);
-        slopeOne.slopeOne();
-        List<Long> similarInterestUsers = userStorage.geSimilar(id);
+        Map<User, HashMap<Film, Double>> data = slopeOne.slopeOne();
 
-        if (similarInterestUsers.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<Long> idRecommendationFilms = filmStorage.getIdOfCommon(similarInterestUsers, id, count);
+        HashMap<Film, Double> recommendedFilms = data.get(userStorage.get(id).get());
 
-        List<Film> films = filmStorage.get(idRecommendationFilms);
+        List<Film> films = new ArrayList<>();
+
+        recommendedFilms.forEach((film, aDouble) -> {
+            if (film.getRate() > 5) {
+                films.add(film);
+            }
+        });
 
         genreStorage.load(films);
         directorStorage.load(films);

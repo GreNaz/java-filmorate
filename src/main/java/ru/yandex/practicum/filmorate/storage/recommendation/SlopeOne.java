@@ -2,12 +2,11 @@ package ru.yandex.practicum.filmorate.storage.recommendation;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -25,12 +24,11 @@ public class SlopeOne {
     private final Map<User, HashMap<Film, Double>> outputData = new HashMap<>();
 
 
-    public void slopeOne() {
+    public Map<User, HashMap<Film, Double>> slopeOne() {
         Map<User, HashMap<Film, Double>> inputData = inp.initializeData();
-        log.info("Slope One - Before the Prediction\n");
         buildDifferencesMatrix(inputData);
-        log.info("\nSlope One - With Predictions\n");
         predict(inputData);
+        return outputData;
     }
 
     /**
@@ -68,7 +66,6 @@ public class SlopeOne {
                 diff.get(j).put(i, oldValue / count);
             }
         }
-        printData(data);
     }
 
     /**
@@ -92,7 +89,8 @@ public class SlopeOne {
                         double finalValue = predictedValue * freq.get(k).get(j);
                         uPred.put(k, uPred.get(k) + finalValue);
                         uFreq.put(k, uFreq.get(k) + freq.get(k).get(j));
-                    } catch (NullPointerException e1) {
+                    } catch (NullPointerException exception) {
+                        throw new ObjectNotFoundException("Error in process calculate recommendations");
                     }
                 }
             }
@@ -111,22 +109,5 @@ public class SlopeOne {
             }
             outputData.put(e.getKey(), clean);
         }
-        printData(outputData);
     }
-
-    private void printData(Map<User, HashMap<Film, Double>> data) {
-        for (User user : data.keySet()) {
-            log.info("USER WITH LOGIN {} AND ID = {}: ", user.getLogin(), user.getId());
-            print(data.get(user));
-        }
-    }
-
-    private void print(HashMap<Film, Double> hashMap) {
-        NumberFormat formatter = new DecimalFormat("#0.000");
-        for (Film j : hashMap.keySet()) {
-            log.info(" FILM WITH ID = {} IS RECOMMENDED IF VALUE > 0  --> {} ",
-                    j.getId(), formatter.format(hashMap.get(j).doubleValue()));
-        }
-    }
-
 }
